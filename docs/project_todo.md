@@ -5,7 +5,7 @@ This to-do list is organized for the 8-hour rapid implementation timeline, with 
 ## Phase 1: Core Framework (2 hours)
 
 ### 1.A: Environment and Configuration (0.5 hour)
-- [ ] 1.1 Create `src/environment.py` for environment setup
+- [x] 1.1 Create `src/environment.py` for environment setup
   - Dependencies installation
   - Path configuration
   - CUDA setup for different quantization levels
