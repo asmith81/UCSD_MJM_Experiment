@@ -21,6 +21,22 @@ class LoggingConfig(TypedDict):
     execution_log: str
     log_level: str
 
+class PromptConfig(TypedDict):
+    name: str
+    text: str
+    category: str
+    field_to_extract: List[str]
+    description: str
+    version: str
+    format_instructions: Dict[str, Any]
+    metadata: Dict[str, Any]
+
+class PromptConfigInfo(TypedDict):
+    name: str
+    description: str
+    version: str
+    last_updated: str
+
 def load_yaml_config(config_path: str) -> Dict[str, Any]:
     """
     Load YAML configuration file.
@@ -84,6 +100,30 @@ def load_model_config(config_path: str, model_name: str) -> ModelConfig:
         raise ValueError(f"Configuration for model {model_name} not found")
     return config['models'][model_name]
 
+def load_prompt_config(config_path: str, prompt_name: str) -> PromptConfig:
+    """
+    Load prompt-specific configuration.
+    
+    Args:
+        config_path: Path to YAML configuration file
+        prompt_name: Name of the prompt to load config for
+        
+    Returns:
+        PromptConfig: Prompt-specific configuration
+        
+    Raises:
+        ValueError: If prompt config is not found or invalid
+    """
+    config = load_yaml_config(config_path)
+    if 'prompts' not in config:
+        raise ValueError("No prompts section found in configuration")
+    
+    for prompt in config['prompts']:
+        if prompt['name'] == prompt_name:
+            return prompt
+    
+    raise ValueError(f"Configuration for prompt {prompt_name} not found")
+
 def setup_logging_config(config: Dict[str, Any], log_dir: Path) -> LoggingConfig:
     """
     Setup logging configuration from main config.
@@ -129,7 +169,7 @@ def validate_config(config: Dict[str, Any]) -> bool:
     required_sections = ['models', 'data', 'logging']
     required_model_fields = ['name', 'quantization_levels']
     required_data_fields = ['image_dir', 'ground_truth_csv']
-    required_logging_fields = ['result_file', 'execution_log']  # Removed log_dir from required fields
+    required_logging_fields = ['result_file', 'execution_log']
     
     # Check required sections
     for section in required_sections:
@@ -151,5 +191,49 @@ def validate_config(config: Dict[str, Any]) -> bool:
     for field in required_logging_fields:
         if field not in config['logging']:
             raise ValueError(f"Logging section missing required field: {field}")
+    
+    return True
+
+def validate_prompt_config(config: Dict[str, Any]) -> bool:
+    """
+    Validate prompt configuration structure.
+    
+    Args:
+        config: Prompt configuration dictionary to validate
+        
+    Returns:
+        True if configuration is valid
+        
+    Raises:
+        ValueError: If prompt configuration is invalid
+    """
+    required_config_info_fields = ['name', 'description', 'version', 'last_updated']
+    required_prompt_fields = [
+        'name', 'text', 'category', 'field_to_extract',
+        'description', 'version', 'format_instructions', 'metadata'
+    ]
+    
+    # Validate config_info section
+    if 'config_info' not in config:
+        raise ValueError("Missing config_info section in prompt configuration")
+    
+    for field in required_config_info_fields:
+        if field not in config['config_info']:
+            raise ValueError(f"config_info missing required field: {field}")
+    
+    # Validate prompts section
+    if 'prompts' not in config:
+        raise ValueError("Missing prompts section in prompt configuration")
+    
+    for prompt in config['prompts']:
+        for field in required_prompt_fields:
+            if field not in prompt:
+                raise ValueError(f"Prompt missing required field: {field}")
+        
+        # Validate format_instructions
+        if 'output_format' not in prompt['format_instructions']:
+            raise ValueError("Prompt format_instructions missing output_format")
+        if 'required_fields' not in prompt['format_instructions']:
+            raise ValueError("Prompt format_instructions missing required_fields")
     
     return True 

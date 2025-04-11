@@ -17,6 +17,8 @@ class EnvironmentConfig(TypedDict):
     models_dir: Path
     results_dir: Path
     logs_dir: Path
+    config_dir: Path
+    prompts_dir: Path
     cuda_available: bool
     cuda_version: Optional[str]
     dependencies_installed: bool
@@ -39,7 +41,9 @@ def setup_paths(project_root: Path) -> Dict[str, Path]:
         'data_dir': project_root / 'data',
         'models_dir': project_root / 'models',
         'results_dir': project_root / 'results',
-        'logs_dir': project_root / 'logs'
+        'logs_dir': project_root / 'logs',
+        'config_dir': project_root / 'config',
+        'prompts_dir': project_root / 'config' / 'prompts'
     }
     
     try:
@@ -136,11 +140,13 @@ def get_environment_overrides() -> Dict[str, Any]:
     overrides = {
         'development': {
             'log_level': 'DEBUG',
-            'use_gpu': False
+            'use_gpu': False,
+            'prompt_cache': False
         },
         'production': {
             'log_level': 'INFO',
-            'use_gpu': True
+            'use_gpu': True,
+            'prompt_cache': True
         }
     }
     return overrides.get(env, {})
@@ -148,6 +154,7 @@ def get_environment_overrides() -> Dict[str, Any]:
 if __name__ == '__main__':
     # Run environment setup when script is executed directly
     env_config = setup_environment(Path(__file__).parent.parent, Path(__file__).parent.parent / 'requirements.txt')
+    logger = logging.getLogger(__name__)
     logger.info("Environment setup completed")
     logger.info(f"CUDA available: {env_config['cuda_available']}")
     logger.info(f"Project paths: {env_config}") 

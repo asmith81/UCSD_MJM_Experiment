@@ -25,6 +25,8 @@ invoice-extraction-comparison/
 ├── results/                        # Results storage (gitignored)
 └── docs/                           # Documentation
     ├── adr/                        # Architecture Decision Records
+    │   ├── 001-configuration-management.md
+    │   └── 002-prompt-strategy.md  # Single prompt strategy decision
     ├── project_overview.md         # Project goals and scope
     ├── project_rules.md            # Implementation guidelines
     ├── project_todo.md             # Task list and progress tracking
@@ -99,6 +101,8 @@ invoice-extraction-comparison/
 ## Documentation
 
 - `docs/adr/`: Architecture Decision Records
+  - `001-configuration-management.md`: Configuration management decisions
+  - `002-prompt-strategy.md`: Single prompt strategy for field extraction
 - `docs/project_overview.md`: Project goals and scope
 - `docs/project_rules.md`: Implementation guidelines
 - `docs/project_todo.md`: Task list and progress tracking
