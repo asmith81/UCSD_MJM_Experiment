@@ -9,24 +9,28 @@ This project evaluates multiple open-source Large Multimodal Models (LMMs) on th
 - Multiple quantization levels (4, 8, 16, 32 bit) per model
 - Systematic comparison of prompt strategies
 - Comprehensive evaluation metrics and error analysis
+- Efficient test execution with minimized model reloading
 
 ## Project Structure
 ```
 invoice-extraction-comparison/
 ├── config/                         # Configuration files
 │   ├── models/                     # Model-specific configurations
-│   └── prompts/                    # Field-specific prompt templates
+│   ├── prompts/                    # Field-specific prompt templates
+│   └── test_matrix.csv            # Test configuration matrix
 ├── data/                           # Data storage (gitignored)
 ├── src/                            # Source code modules
 │   ├── environment.py              # Environment setup and paths
 │   ├── config.py                   # Configuration management
+│   ├── execution.py                # Test execution framework
 │   └── models/                     # Model implementations
 ├── notebooks/                      # Jupyter notebooks
 ├── results/                        # Results storage (gitignored)
 └── docs/                           # Documentation
     ├── adr/                        # Architecture Decision Records
     │   ├── 001-configuration-management.md
-    │   └── 002-prompt-strategy.md  # Single prompt strategy decision
+    │   ├── 002-prompt-strategy.md  # Single prompt strategy decision
+    │   └── 003-test-matrix-execution.md # Test execution strategy
     ├── project_overview.md         # Project goals and scope
     ├── project_rules.md            # Implementation guidelines
     ├── project_todo.md             # Task list and progress tracking
@@ -103,6 +107,7 @@ invoice-extraction-comparison/
 - `docs/adr/`: Architecture Decision Records
   - `001-configuration-management.md`: Configuration management decisions
   - `002-prompt-strategy.md`: Single prompt strategy for field extraction
+  - `003-test-matrix-execution.md`: Test matrix and execution strategy
 - `docs/project_overview.md`: Project goals and scope
 - `docs/project_rules.md`: Implementation guidelines
 - `docs/project_todo.md`: Task list and progress tracking
@@ -173,4 +178,37 @@ Results are organized by field type and stored in JSON format, including:
 - YAML-based configuration files
 - Clear documentation of decisions
 - Environment setup in source modules
-- Model-specific loading and inference functions 
+- Model-specific loading and inference functions
+
+## Test Matrix and Execution
+
+The project uses a systematic approach to testing different model configurations:
+
+### Test Matrix Structure
+```csv
+model,quantization,prompt_strategy
+pixtral,4,basic_extraction
+pixtral,8,basic_extraction
+...
+```
+
+### Execution Strategy
+1. Each notebook focuses on one model
+2. Test cases are grouped by quantization to minimize model reloading
+3. Prompt templates define the expected fields and JSON structure
+4. Results are validated against the prompt template structure
+
+### Notebook Execution
+```python
+# In notebook
+import execution
+
+def main():
+    # Set model for this notebook
+    MODEL_NAME = "pixtral"  # or llama_vision or doctr
+    
+    # Run test suite
+    execution.run_test_suite(
+        model_name=MODEL_NAME,
+        test_matrix_path="config/test_matrix.csv"
+    ) 

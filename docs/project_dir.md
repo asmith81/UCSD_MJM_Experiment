@@ -8,22 +8,56 @@ This document describes the project's directory structure and the purpose of eac
 invoice-extraction-comparison/
 ├── config/                         # Configuration files
 │   ├── models/                     # Model-specific configurations
-│   └── prompts/                    # Field-specific prompt templates
+│   │   ├── doctr.yaml             # Doctr model configuration
+│   │   ├── llama_vision.yaml      # Llama Vision model configuration
+│   │   └── pixtral.yaml           # Pixtral model configuration
+│   ├── prompts/                    # Field-specific prompt templates
+│   │   ├── basic_extraction.yaml  # Basic extraction prompt
+│   │   ├── detailed.yaml          # Detailed extraction prompt
+│   │   ├── few_shot.yaml          # Few-shot example prompt
+│   │   ├── step_by_step.yaml      # Step-by-step prompt
+│   │   └── locational.yaml        # Locational prompt
+│   └── test_matrix.csv            # Test configuration matrix
 ├── data/                           # Data storage (gitignored)
 ├── src/                            # Source code modules
 │   ├── environment.py              # Environment setup and paths
 │   ├── config.py                   # Configuration management
+│   ├── execution.py                # Test execution framework
 │   └── models/                     # Model implementations
 ├── notebooks/                      # Jupyter notebooks
+│   └── model_notebook_template.py  # Template for model evaluation
 ├── results/                        # Results storage (gitignored)
 └── docs/                           # Documentation
     ├── adr/                        # Architecture Decision Records
+    │   ├── 001-configuration-management.md
+    │   ├── 002-prompt-strategy.md
+    │   └── 003-test-matrix-execution.md
     ├── project_overview.md         # Project goals and scope
     ├── project_rules.md            # Implementation guidelines
     ├── project_todo.md             # Task list and progress tracking
     ├── interface_control_document.md # Component interfaces
     └── project_dir.md              # Detailed directory structure
 ```
+
+## Directory Descriptions
+
+### config/
+Contains all configuration files for the project:
+- `models/`: Model-specific configurations
+- `prompts/`: Prompt templates for different strategies
+- `test_matrix.csv`: Test configuration matrix
+
+### src/
+Core source code modules:
+- `environment.py`: Environment setup
+- `config.py`: Configuration management
+- `execution.py`: Test execution framework
+- `models/`: Model implementations
+
+### notebooks/
+Jupyter notebooks for evaluation:
+- `model_notebook_template.py`: Template for model evaluation
+- Future model-specific notebooks will be added here
 
 ## Configuration Management
 The project uses a dependency injection pattern for configuration management:
@@ -102,74 +136,6 @@ The `notebooks/` directory contains execution environments:
    - Comparative analysis
    - Visualization
    - Best model identification
-
-```
-invoice-extraction-comparison/
-├── README.md                       # Project overview and setup instructions
-├── requirements.txt                # Python dependencies
-│
-├── config/                         # Configuration files
-│   ├── models/                     # Model-specific configurations
-│   │   ├── pixtral.yaml            # Pixtral-12B configuration
-│   │   ├── llama_vision.yaml       # Llama-3.2-11B-Vision configuration
-│   │   └── doctr.yaml              # Doctr configuration
-│   ├── prompts/                    # Field-specific prompt templates
-│   │   ├── work_order/             # Work order number prompts
-│   │   │   ├── simple.yaml         # Simple work order prompt
-│   │   │   ├── detailed.yaml       # Detailed work order prompt
-│   │   │   └── location.yaml       # Locational work order prompt
-│   │   ├── total_cost/             # Total cost prompts
-│   │   │   ├── simple.yaml         # Simple total cost prompt
-│   │   │   ├── detailed.yaml       # Detailed total cost prompt
-│   │   │   └── location.yaml       # Locational total cost prompt
-│   └── test_matrix.csv             # Field-specific test combination matrix
-│
-├── data/                           # Data storage (gitignored)
-│   ├── images/                     # Invoice images
-│   ├── ground_truth.csv            # Ground truth data
-│   └── README.md                   # Data directory documentation
-│
-├── src/                            # Source code modules
-│   ├── environment.py              # Environment setup utilities
-│   ├── config.py                   # Configuration loading utilities
-│   ├── data_utils.py               # Data loading and processing with raw/normalized values
-│   ├── evaluation.py               # Field-specific evaluation metrics
-│   ├── logging.py                  # Result dictionary management
-│   ├── prompts.py                  # Field-specific prompt management
-│   ├── models/                     # Model implementations
-│   │   ├── __init__.py             # Model registry and factory
-│   │   ├── common.py               # Shared model utilities
-│   │   ├── pixtral.py              # Pixtral model with field-specific extraction
-│   │   ├── llama_vision.py         # Llama Vision model with field-specific extraction
-│   │   └── doctr.py                # Doctr model with field-specific extraction
-│   └── visualization.py            # Field-specific result visualization
-│
-├── notebooks/                      # Jupyter notebooks
-│   ├── pixtral_evaluation.ipynb    # Pixtral model evaluation
-│   ├── llama_vision_evaluation.ipynb # Llama Vision model evaluation
-│   ├── doctr_evaluation.ipynb      # Doctr model evaluation
-│   └── results_analysis.ipynb      # Field-specific result analysis
-│
-├── results/                        # Results storage (gitignored)
-│   ├── work_order/                 # Work order field results
-│   │   ├── pixtral_simple_4.json   # Example result file for work order field
-│   │   └── ...                     # Other result files
-│   ├── total_cost/                 # Total cost field results
-│   │   ├── pixtral_simple_4.json   # Example result file for total cost field
-│   │   └── ...                     # Other result files
-│   └── charts/                     # Generated visualizations
-│       ├── work_order_comparison.png # Field-specific comparison chart
-│       ├── total_cost_comparison.png # Field-specific comparison chart
-│       └── ...                     # Other visualization files
-│
-└── docs/                           # Documentation
-    ├── project-overview.md         # Project overview
-    ├── project-rules.md            # Implementation rules
-    ├── project-todo.md             # Task list
-    ├── interface_control_document.md # Component interfaces
-    ├── architecture_diagram.md     # System architecture
-    └── project-directory.md        # This file
-```
 
 ## Key File Contents and Formats
 

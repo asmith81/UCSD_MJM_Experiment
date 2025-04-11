@@ -632,3 +632,67 @@ Validates configuration structure and required fields.
 
 **Raises:**
 - `ValueError`: If configuration is invalid
+```
+
+## Execution Framework
+
+### Test Execution Interface
+```python
+def run_test_suite(model_name: str, test_matrix_path: str) -> List[Dict[str, Any]]:
+    """
+    Run the test suite for a specific model.
+    
+    Args:
+        model_name: Name of the model to test
+        test_matrix_path: Path to the test matrix CSV file
+        
+    Returns:
+        List of test results with metadata
+    """
+```
+
+### Test Matrix Structure
+```csv
+model,quantization,prompt_strategy
+pixtral,4,basic_extraction
+pixtral,8,basic_extraction
+...
+```
+
+## Prompt Template Structure
+
+### YAML Format
+```yaml
+config_info:
+  name: basic_extraction
+  description: Basic prompts for extracting work order number and total cost
+  version: 1.0
+  last_updated: "2024-04-11"
+
+prompts:
+  - name: basic_extraction
+    text: |
+      Please extract the following information from this invoice:
+      1. Work Order Number
+      2. Total Cost
+      
+      Return the information in JSON format with these exact keys:
+      {
+        "work_order_number": "extracted value",
+        "total_cost": "extracted value"
+      }
+    category: basic
+    field_to_extract: [work_order, cost]
+    format_instructions: 
+      output_format: "JSON"
+      required_fields: ["work_order_number", "total_cost"]
+```
+
+### Prompt Template Fields
+- `config_info`: Metadata about the configuration
+- `prompts`: List of prompt definitions
+  - `name`: Unique identifier for the prompt
+  - `text`: The actual prompt text
+  - `category`: Classification of the prompt
+  - `field_to_extract`: Fields to be extracted
+  - `format_instructions`: Output format requirements
