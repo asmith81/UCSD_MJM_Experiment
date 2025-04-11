@@ -1,0 +1,155 @@
+"""
+Configuration management for LMM invoice data extraction comparison.
+Handles YAML config loading, test matrix parsing, and logging setup.
+"""
+
+import yaml
+import pandas as pd
+from pathlib import Path
+from typing import Dict, Any, List, Optional, Union, TypedDict
+
+class ModelConfig(TypedDict):
+    name: str
+    quantization_levels: List[str]
+    architecture: Dict[str, Any]
+    framework: Dict[str, Any]
+    hardware: Dict[str, Any]
+
+class LoggingConfig(TypedDict):
+    log_dir: Path
+    result_file: str
+    execution_log: str
+    log_level: str
+
+def load_yaml_config(config_path: str) -> Dict[str, Any]:
+    """
+    Load YAML configuration file.
+    
+    Args:
+        config_path: Path to YAML configuration file
+        
+    Returns:
+        Dictionary containing configuration parameters
+        
+    Raises:
+        FileNotFoundError: If config file doesn't exist
+        yaml.YAMLError: If YAML parsing fails
+    """
+    try:
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Configuration file not found: {config_path}")
+    except yaml.YAMLError as e:
+        raise yaml.YAMLError(f"Error parsing YAML config: {str(e)}")
+
+def parse_test_matrix(csv_path: str) -> List[Dict[str, Any]]:
+    """
+    Parse test matrix CSV into list of test cases.
+    
+    Args:
+        csv_path: Path to test matrix CSV file
+        
+    Returns:
+        List of dictionaries containing test case parameters
+        
+    Raises:
+        FileNotFoundError: If CSV file doesn't exist
+        pd.errors.EmptyDataError: If CSV is empty
+    """
+    try:
+        df = pd.read_csv(csv_path)
+        return df.to_dict('records')
+    except FileNotFoundError:
+        raise FileNotFoundError(f"Test matrix file not found: {csv_path}")
+    except pd.errors.EmptyDataError:
+        raise pd.errors.EmptyDataError("Test matrix CSV is empty")
+
+def load_model_config(config_path: str, model_name: str) -> ModelConfig:
+    """
+    Load model-specific configuration.
+    
+    Args:
+        config_path: Path to YAML configuration file
+        model_name: Name of the model to load config for
+        
+    Returns:
+        ModelConfig: Model-specific configuration
+        
+    Raises:
+        ValueError: If model config is not found or invalid
+    """
+    config = load_yaml_config(config_path)
+    if model_name not in config['models']:
+        raise ValueError(f"Configuration for model {model_name} not found")
+    return config['models'][model_name]
+
+def setup_logging_config(config: Dict[str, Any], log_dir: Path) -> LoggingConfig:
+    """
+    Setup logging configuration from main config.
+    
+    Args:
+        config: Main configuration dictionary
+        log_dir: Path to logging directory
+        
+    Returns:
+        LoggingConfig: Logging configuration
+        
+    Raises:
+        KeyError: If required logging config keys are missing
+    """
+    try:
+        log_config: LoggingConfig = {
+            'log_dir': log_dir,
+            'result_file': config['logging']['result_file'],
+            'execution_log': config['logging']['execution_log'],
+            'log_level': config['logging'].get('log_level', 'INFO')
+        }
+        
+        # Ensure log directory exists
+        log_config['log_dir'].mkdir(parents=True, exist_ok=True)
+        
+        return log_config
+    except KeyError as e:
+        raise KeyError(f"Missing required logging configuration: {str(e)}")
+
+def validate_config(config: Dict[str, Any]) -> bool:
+    """
+    Validate configuration structure and required fields.
+    
+    Args:
+        config: Configuration dictionary to validate
+        
+    Returns:
+        True if configuration is valid
+        
+    Raises:
+        ValueError: If configuration is invalid
+    """
+    required_sections = ['models', 'data', 'logging']
+    required_model_fields = ['name', 'quantization_levels']
+    required_data_fields = ['image_dir', 'ground_truth_csv']
+    required_logging_fields = ['result_file', 'execution_log']  # Removed log_dir from required fields
+    
+    # Check required sections
+    for section in required_sections:
+        if section not in config:
+            raise ValueError(f"Missing required section: {section}")
+    
+    # Validate model configuration
+    for model in config['models']:
+        for field in required_model_fields:
+            if field not in model:
+                raise ValueError(f"Model missing required field: {field}")
+    
+    # Validate data configuration
+    for field in required_data_fields:
+        if field not in config['data']:
+            raise ValueError(f"Data section missing required field: {field}")
+    
+    # Validate logging configuration
+    for field in required_logging_fields:
+        if field not in config['logging']:
+            raise ValueError(f"Logging section missing required field: {field}")
+    
+    return True 

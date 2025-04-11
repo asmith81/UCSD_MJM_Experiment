@@ -1,6 +1,107 @@
-# Project Directory Structure: LMM Invoice Data Extraction Comparison (Rapid Implementation)
+# Project Directory Structure
 
-This document outlines the directory structure for the field-specific version of the project, optimized for the 8-hour development timeline.
+## Overview
+This document describes the project's directory structure and the purpose of each component.
+
+## Root Directory
+```
+invoice-extraction-comparison/
+├── config/                         # Configuration files
+│   ├── models/                     # Model-specific configurations
+│   └── prompts/                    # Field-specific prompt templates
+├── data/                           # Data storage (gitignored)
+├── src/                            # Source code modules
+│   ├── environment.py              # Environment setup and paths
+│   ├── config.py                   # Configuration management
+│   └── models/                     # Model implementations
+├── notebooks/                      # Jupyter notebooks
+├── results/                        # Results storage (gitignored)
+└── docs/                           # Documentation
+    ├── adr/                        # Architecture Decision Records
+    ├── project_overview.md         # Project goals and scope
+    ├── project_rules.md            # Implementation guidelines
+    ├── project_todo.md             # Task list and progress tracking
+    ├── interface_control_document.md # Component interfaces
+    └── project_dir.md              # Detailed directory structure
+```
+
+## Configuration Management
+The project uses a dependency injection pattern for configuration management:
+
+1. **Environment Setup** (`src/environment.py`)
+   - Sets up project paths
+   - Configures CUDA
+   - Installs dependencies
+   - Creates necessary directories
+
+2. **Configuration Management** (`src/config.py`)
+   - YAML configuration loading
+   - Test matrix CSV parsing
+   - Logging configuration setup
+   - Configuration validation
+
+3. **Configuration Files** (`config/`)
+   - Model-specific configurations
+   - Prompt templates
+   - Test matrix definitions
+
+## Source Code
+The `src/` directory contains the core implementation:
+
+1. **Environment Module** (`environment.py`)
+   - Path management
+   - CUDA setup
+   - Dependency installation
+
+2. **Configuration Module** (`config.py`)
+   - YAML parsing
+   - CSV parsing
+   - Configuration validation
+   - Logging setup
+
+3. **Model Implementations** (`models/`)
+   - Model-specific code
+   - Inference functions
+   - Output parsing
+
+## Documentation
+The `docs/` directory contains project documentation:
+
+1. **Architecture Decisions** (`adr/`)
+   - ADR 001: Configuration Management Design
+
+2. **Project Documentation**
+   - Project overview
+   - Implementation rules
+   - Task tracking
+   - Interface definitions
+   - Directory structure
+
+## Data and Results
+The `data/` and `results/` directories are gitignored:
+
+1. **Data Directory**
+   - Input images
+   - Ground truth CSV
+   - Test matrices
+
+2. **Results Directory**
+   - Evaluation results
+   - Log files
+   - Analysis outputs
+
+## Notebooks
+The `notebooks/` directory contains execution environments:
+
+1. **Model Evaluation**
+   - Pixtral evaluation
+   - Llama Vision evaluation
+   - Doctr evaluation
+
+2. **Results Analysis**
+   - Comparative analysis
+   - Visualization
+   - Best model identification
 
 ```
 invoice-extraction-comparison/

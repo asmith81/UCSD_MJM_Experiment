@@ -18,9 +18,18 @@ invoice-extraction-comparison/
 │   └── prompts/                    # Field-specific prompt templates
 ├── data/                           # Data storage (gitignored)
 ├── src/                            # Source code modules
+│   ├── environment.py              # Environment setup and paths
+│   ├── config.py                   # Configuration management
+│   └── models/                     # Model implementations
 ├── notebooks/                      # Jupyter notebooks
 ├── results/                        # Results storage (gitignored)
 └── docs/                           # Documentation
+    ├── adr/                        # Architecture Decision Records
+    ├── project_overview.md         # Project goals and scope
+    ├── project_rules.md            # Implementation guidelines
+    ├── project_todo.md             # Task list and progress tracking
+    ├── interface_control_document.md # Component interfaces
+    └── project_dir.md              # Detailed directory structure
 ```
 
 ## Setup Instructions
@@ -54,14 +63,24 @@ invoice-extraction-comparison/
 3. **Configuration**
    - Review and adjust model configurations in `config/models/`
    - Customize prompts in `config/prompts/`
+   - Configuration is managed through `src/config.py` with dependency injection pattern
 
 ## Usage
 
 1. **Model Evaluation**
-   - Run model-specific notebooks in `notebooks/`:
-     - `pixtral_evaluation.ipynb`
-     - `llama_vision_evaluation.ipynb`
-     - `doctr_evaluation.ipynb`
+   ```python
+   # In notebook
+   from src.environment import setup_environment
+   from src.config import load_yaml_config, setup_logging_config
+
+   # Setup environment once at notebook start
+   env = setup_environment()
+   paths = env['paths']
+
+   # Load and setup config
+   config = load_yaml_config('config/config.yaml')
+   log_config = setup_logging_config(config, paths['logs'])
+   ```
 
 2. **Results Analysis**
    - Use `results_analysis.ipynb` to analyze and visualize results
@@ -75,9 +94,11 @@ invoice-extraction-comparison/
 - Document all functions with clear docstrings
 - Use simple configuration files (YAML/JSON)
 - Implement core error handling for critical operations
+- Follow dependency injection pattern for configuration management
 
 ## Documentation
 
+- `docs/adr/`: Architecture Decision Records
 - `docs/project_overview.md`: Project goals and scope
 - `docs/project_rules.md`: Implementation guidelines
 - `docs/project_todo.md`: Task list and progress tracking
@@ -105,4 +126,47 @@ Results are organized by field type and stored in JSON format, including:
 
 ## Contact
 
-[Add contact information] 
+[Add contact information]
+
+## Model Configurations
+
+### Pixtral-12B
+- Uses direct prompt format for simplicity
+- Optimized for single-image extraction
+- No conversation history needed
+- Simple prompt structure
+
+### Llama-3.2-11B-Vision
+- Direct prompt format with system message
+- Optimized for invoice extraction
+- Supports LoRA fine-tuning
+- Image preprocessing requirements:
+  - Max size: 1120x1120
+  - RGB conversion
+  - Normalization
+  - Aspect ratio maintenance
+- Higher token limit (2048) for detailed responses
+- No content safety checks (business documents only)
+
+### Doctr
+- Two-stage architecture:
+  - Text detection (DBNet)
+  - Text recognition (CRNN)
+- KIE support for structured extraction
+- PyTorch backend with visualization support
+- Document handling:
+  - PDF support
+  - Single and multi-page images
+  - Preprocessed images only
+- Output structure:
+  - JSON format
+  - Confidence scores
+  - Geometry information
+- Lower hardware requirements (8GB GPU)
+- Higher batch processing capability
+
+## Configuration Management
+- YAML-based configuration files
+- Clear documentation of decisions
+- Environment setup in source modules
+- Model-specific loading and inference functions 
