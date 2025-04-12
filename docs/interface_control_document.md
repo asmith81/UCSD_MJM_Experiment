@@ -17,7 +17,7 @@ class ModelLoader(Protocol):
 ```python
 class ModelProcessor(Protocol):
     """Protocol for model processing functions."""
-    def __call__(self, model: Any, image: ImageData, prompt: str) -> ModelResponse:
+    def __call__(self, model: Any, image: Union[ImageData, Image.Image], prompt: str) -> ModelResponse:
         ...
 ```
 
@@ -55,8 +55,9 @@ class ModelOutput(TypedDict):
 ```python
 class ModelResponse(TypedDict):
     """Structure for model response data."""
-    output: Dict[str, Any]  # Contains raw_text, parsed_value, normalized_value
-    error: Optional[str]
+    raw_value: str
+    normalized_value: str
+    confidence: float
     processing_time: float
 ```
 
@@ -189,23 +190,36 @@ def run_test_suite(
     processor: Optional[ModelProcessor] = None,
     prompt_loader: Optional[Callable[[str], str]] = None,
     result_validator: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
-) -> List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Run test suite for a model.
+    
+    Args:
+        model_name: Name of the model to test
+        test_matrix_path: Path to test matrix CSV
+        model_loader: Optional function to load model
+        processor: Optional function to process images
+        prompt_loader: Optional function to load prompts
+        result_validator: Optional function to validate results
+        
+    Returns:
+        List of test results
+    """
 ```
 
 ### Result Logging
 ```python
 def log_result(
     result_path: Union[str, Path],
-    image_id: str,
-    model_output: Dict[str, Any],
-    ground_truth: GroundTruthData,
-    processing_time: float,
-    model_name: str,
-    prompt_type: str,
-    quant_level: int,
-    environment: Optional[str] = None,
+    result: ResultStructure,
     storage: Optional[ResultStorage] = None
-) -> None
+) -> None:
+    """Log a test result.
+    
+    Args:
+        result_path: Path to save result
+        result: Result structure to save
+        storage: Optional storage implementation
+    """
 ```
 
 ### Data Loading
@@ -442,21 +456,23 @@ def create_result_structure(model_name, prompt_type, quant_level, environment="R
         ResultStructure: Result structure with metadata and empty results section
     """
     
-def track_execution(execution_log_path, model_name, prompt_type, 
-                   quant_level, status, error=None):
-    """
-    Track execution status for a test run.
+def track_execution(
+    execution_log_path: Union[str, Path],
+    model_name: str,
+    prompt_type: str,
+    quant_level: int,
+    status: str,
+    error: Optional[str] = None
+) -> None:
+    """Track execution status.
     
     Args:
-        execution_log_path: Union[str, Path], path to execution log file
-        model_name: str, name of the model
-        prompt_type: str, type of prompt used
-        quant_level: int, quantization level used
-        status: str, execution status
-        error: Optional[str], error message if any
-        
-    Raises:
-        FileNotFoundError: If log file cannot be created
+        execution_log_path: Path to execution log
+        model_name: Name of the model
+        prompt_type: Type of prompt used
+        quant_level: Quantization level
+        status: Execution status
+        error: Optional error message
     """
 ```
 
@@ -1010,3 +1026,22 @@ The `validate_model_output` function handles:
 - Required field validation
 - Field-specific value validation
 - Type checking for normalized values
+
+### Image Processing
+```python
+def process_image(
+    model: Any,
+    image: Union[ImageData, Image.Image],
+    prompt: str
+) -> ModelResponse:
+    """Process an image with a model.
+    
+    Args:
+        model: Loaded model instance
+        image: Image to process (either ImageData or PIL Image)
+        prompt: Prompt template to use
+        
+    Returns:
+        ModelResponse containing extraction results
+    """
+```

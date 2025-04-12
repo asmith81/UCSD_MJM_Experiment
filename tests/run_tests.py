@@ -5,8 +5,13 @@ Adapts to local and RunPod environments.
 
 import os
 import sys
-import pytest
 from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+import pytest
 from src.environment import detect_environment
 
 def main():
