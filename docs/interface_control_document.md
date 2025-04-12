@@ -55,7 +55,7 @@ class ModelOutput(TypedDict):
 ```python
 class ModelResponse(TypedDict):
     """Structure for model response data."""
-    output: ModelOutput
+    output: Dict[str, Any]  # Contains raw_text, parsed_value, normalized_value
     error: Optional[str]
     processing_time: float
 ```
@@ -66,7 +66,7 @@ class EvaluationResult(TypedDict):
     """Structure for evaluation results."""
     normalized_match: bool
     cer: float
-    error_category: str
+    error_category: Optional[str]
 ```
 
 ### Result Entry
@@ -81,9 +81,9 @@ class ResultEntry(TypedDict):
 ```python
 class ResultStructure(TypedDict):
     """Structure for complete result file."""
-    test_parameters: Dict[str, Any]
-    results_by_image: Dict[str, ResultEntry]
-    execution_info: Dict[str, Any]
+    test_parameters: Dict[str, Any]  # Contains model, quantization, prompt_strategy
+    model_response: ModelResponse
+    evaluation: Dict[str, Dict[str, Any]]  # Contains work_order_number and total_cost metrics
 ```
 
 ## Configuration Structures

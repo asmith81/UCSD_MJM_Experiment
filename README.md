@@ -192,6 +192,10 @@ Results are organized by field type and stored in JSON format, including:
 - No conversation history needed
 - Simple prompt structure
 - Image preprocessing handled by AutoProcessor
+- Returns standardized result structure with:
+  - Test parameters (model, quantization, prompt strategy)
+  - Model response (output, error, processing time)
+  - Evaluation metrics (normalized match, CER, error category)
 
 ### Llama-3.2-11B-Vision
 - Direct prompt format with system message
@@ -204,6 +208,10 @@ Results are organized by field type and stored in JSON format, including:
   - Aspect ratio maintenance
 - Higher token limit (2048) for detailed responses
 - No content safety checks (business documents only)
+- Returns standardized result structure with:
+  - Test parameters (model, quantization, prompt strategy)
+  - Model response (output, error, processing time)
+  - Evaluation metrics (normalized match, CER, error category)
 
 ### Doctr
 - Two-stage architecture:
@@ -221,6 +229,10 @@ Results are organized by field type and stored in JSON format, including:
   - Geometry information
 - Lower hardware requirements (8GB GPU)
 - Higher batch processing capability
+- Returns standardized result structure with:
+  - Test parameters (model, quantization, prompt strategy)
+  - Model response (output, error, processing time)
+  - Evaluation metrics (normalized match, CER, error category)
 
 ## Test Matrix and Execution
 
