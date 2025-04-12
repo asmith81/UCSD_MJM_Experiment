@@ -56,7 +56,7 @@ def filter_results(results: List[Dict[str, Any]], **kwargs) -> List[Dict[str, An
             filtered.append(result)
     return filtered
 
-def aggregate_by_model_field(results: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, float]]]:
+def aggregate_by_model_field(results: List[Dict[str, Any]]) -> Dict[str, Dict[str, Dict[str, Dict[str, float]]]]:
     """Aggregate results by model and field type."""
     metrics = {}
     for result in results:
@@ -441,6 +441,141 @@ def plot_quantization_heatmap(quant_metrics: Dict[str, Dict[str, Dict[str, Dict[
     plt.ylabel('Quantization Level (bits)')
     plt.tight_layout()
     plt.show()
+
+def load_test_matrix(test_matrix_path: str) -> List[Dict[str, Any]]:
+    """
+    Load and validate the test matrix JSON file.
+    
+    Args:
+        test_matrix_path: Path to the test matrix JSON file
+        
+    Returns:
+        List of test cases
+        
+    Raises:
+        FileNotFoundError: If test matrix file doesn't exist
+        ValueError: If test matrix is invalid
+    """
+    if not Path(test_matrix_path).exists():
+        raise FileNotFoundError(f"Test matrix file not found: {test_matrix_path}")
+        
+    try:
+        with open(test_matrix_path, 'r') as f:
+            data = json.load(f)
+            
+        if 'test_cases' not in data:
+            raise ValueError("Test matrix must contain 'test_cases' array")
+            
+        return data['test_cases']
+        
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON in test matrix file: {test_matrix_path}")
+
+def analyze_results(results: List[Dict[str, Any]], test_matrix_path: str) -> Dict[str, Any]:
+    """
+    Analyze test results and generate performance metrics.
+    
+    Args:
+        results: List of test results
+        test_matrix_path: Path to test matrix JSON file
+        
+    Returns:
+        Dictionary containing analysis results
+    """
+    # Load test matrix
+    test_cases = load_test_matrix(test_matrix_path)
+    
+    # Initialize analysis structure
+    analysis = {
+        'by_model': {},
+        'by_field': {},
+        'by_quantization': {},
+        'overall': {
+            'total_tests': len(results),
+            'successful_tests': 0,
+            'failed_tests': 0,
+            'average_processing_time': 0.0
+        }
+    }
+    
+    # Process results
+    total_time = 0.0
+    for result in results:
+        # Update overall metrics
+        if 'error' not in result:
+            analysis['overall']['successful_tests'] += 1
+            total_time += result.get('processing_time', 0.0)
+        else:
+            analysis['overall']['failed_tests'] += 1
+            
+        # Update model-specific metrics
+        model_name = result['model_name']
+        if model_name not in analysis['by_model']:
+            analysis['by_model'][model_name] = {
+                'total_tests': 0,
+                'successful_tests': 0,
+                'failed_tests': 0,
+                'average_processing_time': 0.0
+            }
+        model_stats = analysis['by_model'][model_name]
+        model_stats['total_tests'] += 1
+        if 'error' not in result:
+            model_stats['successful_tests'] += 1
+            model_stats['average_processing_time'] += result.get('processing_time', 0.0)
+        else:
+            model_stats['failed_tests'] += 1
+            
+        # Update field-specific metrics
+        field_type = result['field_type']
+        if field_type not in analysis['by_field']:
+            analysis['by_field'][field_type] = {
+                'total_tests': 0,
+                'successful_tests': 0,
+                'failed_tests': 0,
+                'average_processing_time': 0.0
+            }
+        field_stats = analysis['by_field'][field_type]
+        field_stats['total_tests'] += 1
+        if 'error' not in result:
+            field_stats['successful_tests'] += 1
+            field_stats['average_processing_time'] += result.get('processing_time', 0.0)
+        else:
+            field_stats['failed_tests'] += 1
+            
+        # Update quantization-specific metrics
+        quant_level = result['quant_level']
+        if quant_level not in analysis['by_quantization']:
+            analysis['by_quantization'][quant_level] = {
+                'total_tests': 0,
+                'successful_tests': 0,
+                'failed_tests': 0,
+                'average_processing_time': 0.0
+            }
+        quant_stats = analysis['by_quantization'][quant_level]
+        quant_stats['total_tests'] += 1
+        if 'error' not in result:
+            quant_stats['successful_tests'] += 1
+            quant_stats['average_processing_time'] += result.get('processing_time', 0.0)
+        else:
+            quant_stats['failed_tests'] += 1
+            
+    # Calculate averages
+    if analysis['overall']['successful_tests'] > 0:
+        analysis['overall']['average_processing_time'] = total_time / analysis['overall']['successful_tests']
+        
+    for model_stats in analysis['by_model'].values():
+        if model_stats['successful_tests'] > 0:
+            model_stats['average_processing_time'] /= model_stats['successful_tests']
+            
+    for field_stats in analysis['by_field'].values():
+        if field_stats['successful_tests'] > 0:
+            field_stats['average_processing_time'] /= field_stats['successful_tests']
+            
+    for quant_stats in analysis['by_quantization'].values():
+        if quant_stats['successful_tests'] > 0:
+            quant_stats['average_processing_time'] /= quant_stats['successful_tests']
+            
+    return analysis
 
 def main():
     """Main analysis function."""

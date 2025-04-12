@@ -7,6 +7,7 @@ import yaml
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Any, List, Optional, Union, TypedDict
+import json
 
 class ModelConfig(TypedDict):
     name: str
@@ -59,27 +60,44 @@ def load_yaml_config(config_path: str) -> Dict[str, Any]:
     except yaml.YAMLError as e:
         raise yaml.YAMLError(f"Error parsing YAML config: {str(e)}")
 
-def parse_test_matrix(csv_path: str) -> List[Dict[str, Any]]:
+def parse_test_matrix(json_path: str) -> List[Dict[str, Any]]:
     """
-    Parse test matrix CSV into list of test cases.
+    Parse test matrix JSON into list of test cases.
     
     Args:
-        csv_path: Path to test matrix CSV file
+        json_path: Path to test matrix JSON file
         
     Returns:
         List of dictionaries containing test case parameters
         
     Raises:
-        FileNotFoundError: If CSV file doesn't exist
-        pd.errors.EmptyDataError: If CSV is empty
+        FileNotFoundError: If JSON file doesn't exist
+        ValueError: If JSON is invalid or missing required fields
     """
     try:
-        df = pd.read_csv(csv_path)
-        return df.to_dict('records')
+        with open(json_path, 'r') as f:
+            data = json.load(f)
+            
+        if 'test_cases' not in data:
+            raise ValueError("Test matrix JSON must contain 'test_cases' array")
+            
+        # Validate each test case
+        required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level']
+        for case in data['test_cases']:
+            missing_fields = [field for field in required_fields if field not in case]
+            if missing_fields:
+                raise ValueError(f"Test case missing required fields: {missing_fields}")
+                
+            # Validate quantization level
+            if case['quant_level'] not in [4, 8, 16, 32]:
+                raise ValueError(f"Invalid quantization level: {case['quant_level']}")
+                
+        return data['test_cases']
+        
     except FileNotFoundError:
-        raise FileNotFoundError(f"Test matrix file not found: {csv_path}")
-    except pd.errors.EmptyDataError:
-        raise pd.errors.EmptyDataError("Test matrix CSV is empty")
+        raise FileNotFoundError(f"Test matrix file not found: {json_path}")
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON in test matrix file: {json_path}")
 
 def load_model_config(config_path: str, model_name: str) -> ModelConfig:
     """

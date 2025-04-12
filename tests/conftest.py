@@ -20,9 +20,9 @@ def test_data_dir(project_root: Path) -> Path:
     return project_root / "tests" / "data"
 
 @pytest.fixture(scope="session")
-def mock_data_dir(test_data_dir: Path) -> Path:
+def mock_data_dir(project_root: Path) -> Path:
     """Get the mock data directory."""
-    return test_data_dir / "mock"
+    return project_root / "tests" / "mock_data"
 
 @pytest.fixture(scope="session")
 def environment() -> str:

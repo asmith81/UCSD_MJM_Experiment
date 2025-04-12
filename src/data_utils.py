@@ -337,16 +337,16 @@ def validate_image_directory(image_dir: Union[str, Path], config: DataConfig) ->
 
 def validate_ground_truth(ground_truth_path: Union[str, Path]) -> Dict[str, Any]:
     """
-    Validate ground truth data from a file.
+    Validate ground truth data structure.
     
     Args:
         ground_truth_path: Path to ground truth file
         
     Returns:
-        Dictionary containing validated ground truth data
+        Validated ground truth data
         
     Raises:
-        FileNotFoundError: If file doesn't exist
+        FileNotFoundError: If ground truth file not found
         ValueError: If data is invalid
     """
     try:
@@ -357,6 +357,10 @@ def validate_ground_truth(ground_truth_path: Union[str, Path]) -> Dict[str, Any]
         # Load and validate data
         if ground_truth_path.suffix == '.csv':
             data = load_ground_truth(ground_truth_path)
+        elif ground_truth_path.suffix == '.json':
+            import json
+            with open(ground_truth_path, 'r') as f:
+                data = json.load(f)
         else:
             raise ValueError(f"Unsupported ground truth file format: {ground_truth_path.suffix}")
             

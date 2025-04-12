@@ -167,6 +167,59 @@ Results are organized by field type and stored in JSON format, including:
 - Storage implementation details
 - Performance heatmaps and visualizations
 
+### Data Formats
+All data exchange in the system uses JSON format for consistency and type safety:
+
+1. **Ground Truth Data**
+```json
+{
+    "image_id": {
+        "work_order_number": {
+            "raw_value": "string",
+            "normalized_value": "string"
+        },
+        "total_cost": {
+            "raw_value": "string",
+            "normalized_value": "float"
+        }
+    }
+}
+```
+
+2. **Model Responses**
+```json
+{
+    "work_order_number": {
+        "raw_text": "string",
+        "parsed_value": "string",
+        "normalized_value": "string",
+        "confidence": "float",
+        "processing_time": "float"
+    },
+    "total_cost": {
+        "raw_text": "string",
+        "parsed_value": "string",
+        "normalized_value": "float",
+        "confidence": "float",
+        "processing_time": "float"
+    }
+}
+```
+
+3. **Test Matrix**
+```json
+{
+    "test_cases": [
+        {
+            "model_name": "string",
+            "field_type": "string",
+            "prompt_type": "string",
+            "quant_level": "integer"
+        }
+    ]
+}
+```
+
 ## Contributing
 
 1. Follow the project structure and coding guidelines

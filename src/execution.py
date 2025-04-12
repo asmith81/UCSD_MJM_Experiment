@@ -10,6 +10,7 @@ import pandas as pd
 from typing import Dict, Any, List, Callable, Optional, Protocol
 import logging
 from pathlib import Path
+import json
 
 # Configure logging
 logging.basicConfig(
@@ -28,15 +29,15 @@ class ModelProcessor(Protocol):
     def __call__(self, model: Any, prompt_template: str) -> Dict[str, Any]:
         ...
 
-def load_test_matrix(test_matrix_path: str) -> pd.DataFrame:
+def load_test_matrix(test_matrix_path: str) -> List[Dict[str, Any]]:
     """
-    Load and validate the test matrix CSV file.
+    Load and validate the test matrix JSON file.
     
     Args:
-        test_matrix_path: Path to the test matrix CSV file
+        test_matrix_path: Path to the test matrix JSON file
         
     Returns:
-        DataFrame containing test cases
+        List of test cases
         
     Raises:
         FileNotFoundError: If test matrix file doesn't exist
@@ -45,21 +46,31 @@ def load_test_matrix(test_matrix_path: str) -> pd.DataFrame:
     if not Path(test_matrix_path).exists():
         raise FileNotFoundError(f"Test matrix file not found: {test_matrix_path}")
         
-    df = pd.read_csv(test_matrix_path)
-    
-    # Validate required columns
-    required_columns = ['model', 'quantization', 'prompt_strategy']
-    missing_columns = [col for col in required_columns if col not in df.columns]
-    if missing_columns:
-        raise ValueError(f"Test matrix missing required columns: {missing_columns}")
+    try:
+        with open(test_matrix_path, 'r') as f:
+            data = json.load(f)
+            
+        if 'test_cases' not in data:
+            raise ValueError("Test matrix must contain 'test_cases' array")
+            
+        # Validate required fields
+        required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level']
+        for case in data['test_cases']:
+            missing_fields = [field for field in required_fields if field not in case]
+            if missing_fields:
+                raise ValueError(f"Test case missing required fields: {missing_fields}")
+                
+        # Validate quantization values
+        valid_quantization = [4, 8, 16, 32]
+        invalid_quantization = [case['quant_level'] for case in data['test_cases'] 
+                              if case['quant_level'] not in valid_quantization]
+        if invalid_quantization:
+            raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
+            
+        return data['test_cases']
         
-    # Validate quantization values
-    valid_quantization = [4, 8, 16, 32]
-    invalid_quantization = df[~df['quantization'].isin(valid_quantization)]['quantization'].unique()
-    if len(invalid_quantization) > 0:
-        raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
-        
-    return df
+    except json.JSONDecodeError:
+        raise ValueError(f"Invalid JSON in test matrix file: {test_matrix_path}")
 
 def run_test_suite(
     model_name: str, 
@@ -93,7 +104,7 @@ def run_test_suite(
     
     # Load and filter test matrix
     test_cases = load_test_matrix(test_matrix_path)
-    model_cases = test_cases[test_cases['model'] == model_name]
+    model_cases = [case for case in test_cases if case['model_name'] == model_name]
     
     if len(model_cases) == 0:
         raise ValueError(f"No test cases found for model: {model_name}")
@@ -101,7 +112,7 @@ def run_test_suite(
     results = []
     
     # Group by quantization to minimize model reloads
-    for quantization in sorted(model_cases['quantization'].unique()):
+    for quantization in sorted(set(case['quant_level'] for case in model_cases)):
         logger.info(f"Loading model {model_name} with quantization {quantization}")
         
         try:
@@ -109,13 +120,13 @@ def run_test_suite(
             model = model_loader(model_name, quantization)
             
             # Get all prompt strategies for this quantization
-            quantization_cases = model_cases[model_cases['quantization'] == quantization]
+            quantization_cases = [case for case in model_cases if case['quant_level'] == quantization]
             
             for _, case in quantization_cases.iterrows():
-                logger.info(f"Running test case: {case['prompt_strategy']}")
+                logger.info(f"Running test case: {case['prompt_type']}")
                 try:
                     # Load prompt template
-                    prompt_template = prompt_loader(case['prompt_strategy'])
+                    prompt_template = prompt_loader(case['prompt_type'])
                     
                     # Run inference
                     result = processor(model, prompt_template)
@@ -127,17 +138,17 @@ def run_test_suite(
                     validated_result.update({
                         'model': model_name,
                         'quantization': quantization,
-                        'prompt_strategy': case['prompt_strategy']
+                        'prompt_type': case['prompt_type']
                     })
                     
                     results.append(validated_result)
                     
                 except Exception as e:
-                    logger.error(f"Error in test case {case['prompt_strategy']}: {str(e)}")
+                    logger.error(f"Error in test case {case['prompt_type']}: {str(e)}")
                     results.append({
                         'model': model_name,
                         'quantization': quantization,
-                        'prompt_strategy': case['prompt_strategy'],
+                        'prompt_type': case['prompt_type'],
                         'error': str(e)
                     })
                     

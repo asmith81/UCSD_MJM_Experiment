@@ -603,25 +603,57 @@ def format_field_prompt(template, model_name, field_type, **kwargs):
 
 ## 3. File Formats
 
-### 3.1 Ground Truth CSV Format
+### 3.1 Ground Truth JSON Format
 
-```
-Invoice,Type,Timestamp,Name,Work Order Number/Numero de Orden,Total
-1017,Invoice,10/17/2024,Edgar,20502, 950.00 
-1018,Invoice,10/17/2024,Edgar,20558, 550.00 
-1019,Invoice,10/17/2024,Edgar,20509, 150.00 
-...
+```json
+{
+    "image_id": {
+        "work_order_number": {
+            "raw_value": "string",
+            "normalized_value": "string"
+        },
+        "total_cost": {
+            "raw_value": "string",
+            "normalized_value": "float"
+        }
+    }
+}
 ```
 
-### 3.2 Field-Specific Test Matrix CSV Format
+### 3.2 Model Response JSON Format
 
+```json
+{
+    "work_order_number": {
+        "raw_text": "string",
+        "parsed_value": "string",
+        "normalized_value": "string",
+        "confidence": "float",
+        "processing_time": "float"
+    },
+    "total_cost": {
+        "raw_text": "string",
+        "parsed_value": "string",
+        "normalized_value": "float",
+        "confidence": "float",
+        "processing_time": "float"
+    }
+}
 ```
-model_name,field_type,prompt_type,quant_level
-pixtral,work_order_number,simple_wo,4
-pixtral,work_order_number,detailed_wo,4
-pixtral,total_cost,simple_total,4
-pixtral,total_cost,detailed_total,4
-...
+
+### 3.3 Test Matrix JSON Format
+
+```json
+{
+    "test_cases": [
+        {
+            "model_name": "string",
+            "field_type": "string",
+            "prompt_type": "string",
+            "quant_level": "integer"
+        }
+    ]
+}
 ```
 
 ## 4. Analysis Functions

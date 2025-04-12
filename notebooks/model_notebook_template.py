@@ -46,7 +46,7 @@ config = load_yaml_config('config/config.yaml')
 # %%
 # Set model for this notebook
 MODEL_NAME = "pixtral"  # or llama_vision or doctr
-TEST_MATRIX_PATH = "config/test_matrix.csv"
+TEST_MATRIX_PATH = "config/test_matrix.json"
 
 # %% [markdown]
 # ## Run Test Suite

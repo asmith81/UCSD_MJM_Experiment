@@ -49,32 +49,30 @@ def test_mock_data_loading(mock_data_dir: Path):
     mock_image = mock_data_dir / "test_image.jpg"
     mock_gt = mock_data_dir / "test_ground_truth.json"
     
-    if not mock_data_dir.exists():
-        mock_data_dir.mkdir(parents=True)
+    # Check if files exist
+    assert mock_image.exists(), f"Mock image not found: {mock_image}"
+    assert mock_gt.exists(), f"Mock ground truth not found: {mock_gt}"
     
-    # Create test config
-    test_config: DataConfig = {
-        'image_dir': mock_data_dir,
-        'ground_truth_csv': mock_data_dir / "ground_truth.csv",
-        'image_extensions': ['.jpg', '.jpeg', '.png'],
-        'max_image_size': 1120,
-        'supported_formats': ['RGB', 'L'],
-        'image_processor': DefaultImageProcessor()
-    }
+    # Load and validate data
+    image = load_image(mock_image, DataConfig(
+        image_dir=mock_data_dir,
+        ground_truth_csv=mock_gt,
+        image_extensions=['.jpg'],
+        max_image_size=1024,
+        supported_formats=['JPEG'],
+        image_processor=DefaultImageProcessor()
+    ))
     
-    # Test image loading
-    try:
-        image = load_image(mock_image, test_config)
-        assert image is not None
-    except FileNotFoundError:
-        pytest.skip("Mock image not found")
+    assert image is not None
+    assert image.size[0] > 0
+    assert image.size[1] > 0
     
-    # Test ground truth validation
-    try:
-        gt_data = validate_ground_truth(mock_gt)
-        assert gt_data is not None
-    except FileNotFoundError:
-        pytest.skip("Mock ground truth not found")
+    # Load and validate ground truth
+    gt_data = validate_ground_truth(mock_gt)
+    assert gt_data is not None
+    assert 'test_image' in gt_data
+    assert 'work_order_number' in gt_data['test_image']
+    assert 'total_cost' in gt_data['test_image']
 
 def test_result_logging(project_root: Path):
     """Test result logging functionality."""
