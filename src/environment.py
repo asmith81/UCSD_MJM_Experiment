@@ -22,6 +22,30 @@ class EnvironmentConfig(TypedDict):
     cuda_available: bool
     cuda_version: Optional[str]
     dependencies_installed: bool
+    environment: str  # 'local' or 'runpod'
+
+def detect_environment() -> str:
+    """
+    Detect the current environment.
+    
+    Returns:
+        str: 'local' or 'runpod'
+    """
+    # Check for RunPod specific environment variables
+    if os.getenv('RUNPOD_POD_ID') is not None:
+        return 'runpod'
+    
+    # Check for CUDA availability and GPU memory
+    if torch.cuda.is_available():
+        try:
+            # RunPod containers typically have large GPU memory
+            gpu_memory = torch.cuda.get_device_properties(0).total_memory
+            if gpu_memory > 20 * 1024 * 1024 * 1024:  # More than 20GB
+                return 'runpod'
+        except:
+            pass
+    
+    return 'local'
 
 def setup_paths(project_root: Path) -> Dict[str, Path]:
     """
@@ -117,12 +141,16 @@ def setup_environment(project_root: Path, requirements_path: Path) -> Environmen
         # Install dependencies
         dependencies_installed = install_dependencies(requirements_path)
         
+        # Detect environment
+        env = detect_environment()
+        
         # Combine all configurations
         env_config: EnvironmentConfig = {
             **paths,
             'cuda_available': cuda_info['cuda_available'],
             'cuda_version': cuda_info['cuda_version'],
-            'dependencies_installed': dependencies_installed
+            'dependencies_installed': dependencies_installed,
+            'environment': env
         }
         
         return env_config
@@ -136,14 +164,14 @@ def get_environment_overrides() -> Dict[str, Any]:
     Returns:
         Dictionary of environment-specific overrides
     """
-    env = os.getenv('ENVIRONMENT', 'development')
+    env = detect_environment()
     overrides = {
-        'development': {
+        'local': {
             'log_level': 'DEBUG',
             'use_gpu': False,
             'prompt_cache': False
         },
-        'production': {
+        'runpod': {
             'log_level': 'INFO',
             'use_gpu': True,
             'prompt_cache': True
@@ -156,5 +184,6 @@ if __name__ == '__main__':
     env_config = setup_environment(Path(__file__).parent.parent, Path(__file__).parent.parent / 'requirements.txt')
     logger = logging.getLogger(__name__)
     logger.info("Environment setup completed")
+    logger.info(f"Environment: {env_config['environment']}")
     logger.info(f"CUDA available: {env_config['cuda_available']}")
     logger.info(f"Project paths: {env_config}") 
