@@ -7,7 +7,7 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Union, TypedDict
+from typing import Dict, Any, List, Optional, Union, TypedDict, Protocol
 from datetime import datetime
 import pandas as pd
 from .data_utils import normalize_work_order, normalize_total_cost, GroundTruthData
@@ -18,6 +18,28 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+class ResultStorage(Protocol):
+    """Protocol for result storage implementations."""
+    def save_result(self, result_path: Union[str, Path], result: Dict[str, Any]) -> None:
+        ...
+    def load_result(self, result_path: Union[str, Path]) -> Dict[str, Any]:
+        ...
+
+class FileSystemStorage:
+    """Default file system storage implementation."""
+    def save_result(self, result_path: Union[str, Path], result: Dict[str, Any]) -> None:
+        """Save result to file system."""
+        result_path = Path(result_path)
+        result_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(result_path, 'w') as f:
+            json.dump(result, f, indent=2)
+            
+    def load_result(self, result_path: Union[str, Path]) -> Dict[str, Any]:
+        """Load result from file system."""
+        result_path = Path(result_path)
+        with open(result_path, 'r') as f:
+            return json.load(f)
 
 class ModelOutput(TypedDict):
     """Structure for model output data."""
@@ -132,7 +154,7 @@ def create_result_structure(
     model_name: str,
     prompt_type: str,
     quant_level: int,
-    environment: str = "RunPod T4 GPU"
+    environment: Optional[str] = None
 ) -> ResultStructure:
     """
     Create base result structure for a test run.
@@ -141,7 +163,7 @@ def create_result_structure(
         model_name: Name of the model being tested
         prompt_type: Type of prompt used
         quant_level: Quantization level used
-        environment: Testing environment description
+        environment: Optional testing environment description
         
     Returns:
         Base result structure dictionary
@@ -150,7 +172,7 @@ def create_result_structure(
         "meta": {
             "experiment_id": f"exp-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
             "timestamp": datetime.now().isoformat(),
-            "environment": environment
+            "environment": environment or "RunPod T4 GPU"
         },
         "test_parameters": {
             "model_name": model_name,
@@ -196,7 +218,8 @@ def log_result(
     model_name: str,
     prompt_type: str,
     quant_level: int,
-    environment: str = "RunPod T4 GPU"
+    environment: Optional[str] = None,
+    storage: Optional[ResultStorage] = None
 ) -> None:
     """
     Log result for a single image.
@@ -210,17 +233,21 @@ def log_result(
         model_name: Name of the model being tested
         prompt_type: Type of prompt used
         quant_level: Quantization level used
-        environment: Testing environment description
+        environment: Optional testing environment description
+        storage: Optional result storage implementation
         
     Raises:
         ValueError: If model output is invalid
     """
     try:
-        # Validate model output
-        validate_model_output(model_output)
+        # Use provided storage or default
+        storage = storage or FileSystemStorage()
         
-        # Create result entry with both fields
-        result_entry: ResultEntry = {
+        # Create result structure
+        result = create_result_structure(model_name, prompt_type, quant_level, environment)
+        
+        # Add result entry
+        result['results_by_image'][image_id] = {
             "ground_truth": ground_truth,
             "model_response": {
                 "work_order_number": {
@@ -277,27 +304,11 @@ def log_result(
             }
         }
         
-        # Append to result file
-        result_path = Path(result_path)
-        if result_path.exists():
-            with open(result_path, 'r') as f:
-                results: ResultStructure = json.load(f)
-        else:
-            results = create_result_structure(
-                model_name=model_name,
-                prompt_type=prompt_type,
-                quant_level=quant_level,
-                environment=environment
-            )
-            
-        results['results_by_image'][image_id] = result_entry
+        # Save result
+        storage.save_result(result_path, result)
         
-        # Write updated results
-        with open(result_path, 'w') as f:
-            json.dump(results, f, indent=2)
-            
     except Exception as e:
-        logger.error(f"Error logging result for image {image_id}: {str(e)}")
+        logger.error(f"Error logging result: {str(e)}")
         raise
 
 def track_execution(

@@ -1,6 +1,286 @@
 # Interface Control Document: LMM Invoice Data Extraction Comparison
 
-This document defines the key interfaces between components in the system, focusing on function signatures, data formats, and component interactions for rapid implementation.
+## Overview
+This document defines the interfaces and data structures used in the LMM Invoice Data Extraction Comparison project. It provides a comprehensive guide to the component interactions and data flow within the system.
+
+## Core Protocols
+
+### Model Loading Protocol
+```python
+class ModelLoader(Protocol):
+    """Protocol for model loading functions."""
+    def __call__(self, model_name: str, config: Dict[str, Any]) -> Any:
+        ...
+```
+
+### Model Processing Protocol
+```python
+class ModelProcessor(Protocol):
+    """Protocol for model processing functions."""
+    def __call__(self, model: Any, image: ImageData, prompt: str) -> ModelResponse:
+        ...
+```
+
+### Result Storage Protocol
+```python
+class ResultStorage(Protocol):
+    """Protocol for result storage implementations."""
+    def save_result(self, result: ResultStructure, path: Path) -> None:
+        ...
+    def load_result(self, path: Path) -> ResultStructure:
+        ...
+```
+
+### Image Processing Protocol
+```python
+class ImageProcessor(Protocol):
+    """Protocol for image processing functions."""
+    def __call__(self, image: ImageData, config: Dict[str, Any]) -> ImageData:
+        ...
+```
+
+## Data Structures
+
+### Model Output
+```python
+class ModelOutput(TypedDict):
+    """Structure for model output data."""
+    raw_value: str
+    normalized_value: str
+    confidence: float
+    processing_time: float
+```
+
+### Model Response
+```python
+class ModelResponse(TypedDict):
+    """Structure for model response data."""
+    output: ModelOutput
+    error: Optional[str]
+    processing_time: float
+```
+
+### Evaluation Result
+```python
+class EvaluationResult(TypedDict):
+    """Structure for evaluation results."""
+    normalized_match: bool
+    cer: float
+    error_category: str
+```
+
+### Result Entry
+```python
+class ResultEntry(TypedDict):
+    """Structure for a single result entry."""
+    model_response: ModelResponse
+    evaluation: EvaluationResult
+```
+
+### Result Structure
+```python
+class ResultStructure(TypedDict):
+    """Structure for complete result file."""
+    test_parameters: Dict[str, Any]
+    results_by_image: Dict[str, ResultEntry]
+    execution_info: Dict[str, Any]
+```
+
+## Configuration Structures
+
+### Data Configuration
+```python
+class DataConfig(TypedDict):
+    """Configuration for data management."""
+    image_extensions: List[str]
+    max_image_size: Tuple[int, int]
+    supported_formats: List[str]
+    image_processor: Optional[ImageProcessor]
+```
+
+### Image Data
+```python
+class ImageData(TypedDict):
+    """Structure for image data."""
+    path: Path
+    data: np.ndarray
+    format: str
+    size: Tuple[int, int]
+```
+
+### Ground Truth Data
+```python
+class GroundTruthData(TypedDict):
+    """Structure for ground truth data."""
+    image_id: str
+    work_order_number: str
+    total_cost: str
+```
+
+## Analysis Functions
+
+### Performance Analysis
+```python
+def analyze_prompt_performance(results: List[ResultStructure]) -> Dict[str, Dict[str, Dict[str, Dict[str, float]]]]:
+    """Analyze performance by prompt strategy across models and field types."""
+    ...
+
+def analyze_quantization_performance(results: List[ResultStructure]) -> Dict[str, Dict[str, Dict[str, Dict[str, float]]]]:
+    """Analyze performance by quantization level across models and prompt strategies."""
+    ...
+
+def aggregate_by_model_field(results: List[ResultStructure]) -> Dict[str, Dict[str, Dict[str, float]]]:
+    """Aggregate results by model and field type."""
+    ...
+
+def analyze_error_distribution(results: List[ResultStructure], field_type: str) -> Dict[str, int]:
+    """Calculate distribution of error categories for specific field type."""
+    ...
+```
+
+### Visualization Functions
+```python
+def plot_model_comparison(metrics: Dict[str, Dict[str, Dict[str, float]]]) -> None:
+    """Plot comparison of models by field type."""
+    ...
+
+def plot_prompt_comparison(prompt_metrics: Dict[str, Dict[str, Dict[str, Dict[str, float]]]]) -> None:
+    """Plot comparison of prompt strategies across models and field types."""
+    ...
+
+def create_performance_heatmap(prompt_metrics: Dict[str, Dict[str, Dict[str, Dict[str, float]]]], 
+                             field_type: str, metric: str = 'accuracy') -> None:
+    """Create a heatmap of model vs prompt performance."""
+    ...
+
+def plot_quantization_heatmap(quant_metrics: Dict[str, Dict[str, Dict[str, Dict[str, float]]]], 
+                            model: str, prompt_strategy: str, metric: str = 'accuracy') -> None:
+    """Create a heatmap of quantization performance for a specific model and prompt strategy."""
+    ...
+
+def plot_error_distribution(error_dist: Dict[str, int], field_type: str) -> None:
+    """Plot distribution of error categories."""
+    ...
+```
+
+### Configuration Functions
+```python
+def setup_environment() -> Dict[str, Any]:
+    """Set up the project environment and return paths and configuration."""
+    ...
+
+def load_yaml_config(config_path: str) -> Dict[str, Any]:
+    """Load a YAML configuration file."""
+    ...
+
+def setup_data_paths() -> Dict[str, Path]:
+    """Set up and validate data directory paths."""
+    ...
+```
+
+## Core Functions
+
+### Test Execution
+```python
+def run_test_suite(
+    model_name: str, 
+    test_matrix_path: str,
+    model_loader: Optional[ModelLoader] = None,
+    processor: Optional[ModelProcessor] = None,
+    prompt_loader: Optional[Callable[[str], str]] = None,
+    result_validator: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+) -> List[Dict[str, Any]]
+```
+
+### Result Logging
+```python
+def log_result(
+    result_path: Union[str, Path],
+    image_id: str,
+    model_output: Dict[str, Any],
+    ground_truth: GroundTruthData,
+    processing_time: float,
+    model_name: str,
+    prompt_type: str,
+    quant_level: int,
+    environment: Optional[str] = None,
+    storage: Optional[ResultStorage] = None
+) -> None
+```
+
+### Data Loading
+```python
+def load_image(
+    image_path: Union[str, Path],
+    config: DataConfig,
+    processor: Optional[ImageProcessor] = None
+) -> Image.Image
+```
+
+## Default Implementations
+
+### File System Storage
+```python
+class FileSystemStorage:
+    """Default file system storage implementation."""
+    def save_result(self, result: ResultStructure, path: Path) -> None:
+        ...
+    def load_result(self, path: Path) -> ResultStructure:
+        ...
+```
+
+### Default Image Processor
+```python
+class DefaultImageProcessor:
+    """Default image processing implementation."""
+    def __call__(self, image: ImageData, config: Dict[str, Any]) -> ImageData:
+        ...
+```
+
+## Error Handling
+
+The system uses a consistent error handling approach:
+1. All critical operations are wrapped in try-except blocks
+2. Errors are logged with appropriate context
+3. Error information is included in result structures
+4. Custom error types are used for specific failure modes
+
+## Data Flow
+
+1. **Configuration Loading**
+   - Environment setup
+   - Model configuration
+   - Data paths
+   - Processing parameters
+
+2. **Model Execution**
+   - Model loading with quantization
+   - Image processing
+   - Inference execution
+   - Result validation
+
+3. **Result Processing**
+   - Error categorization
+   - Performance metrics
+   - Storage operations
+   - Execution tracking
+
+## Dependencies
+
+- Python 3.8+
+- PyTorch with CUDA support
+- PIL for image processing
+- pandas for data handling
+- typing for type hints
+- pathlib for path management
+
+## Version Control
+
+This document should be updated whenever:
+1. New protocols are added
+2. Existing interfaces are modified
+3. New data structures are introduced
+4. Default implementations are changed
 
 ## 1. Core Function Interfaces
 
@@ -35,11 +315,6 @@ def get_model_path(model_name, quant_level):
 ### 1.2 Data Management
 
 ```python
-class GroundTruthData(TypedDict):
-    """Structure for ground truth data."""
-    work_order_number: Dict[str, str]
-    total_cost: Dict[str, Union[str, float]]
-
 def load_image(image_id, image_dir):
     """
     Load image by ID from directory.
@@ -105,25 +380,6 @@ def normalize_cost(value):
 ### 1.3 Field-Specific Evaluation
 
 ```python
-class ModelOutput(TypedDict):
-    """Structure for model output data."""
-    raw_text: str
-    parsed_value: str
-    normalized_value: Union[str, float]
-
-class ModelResponse(TypedDict):
-    """Structure for model response data."""
-    work_order_number: ModelOutput
-    total_cost: ModelOutput
-    processing_time: float
-
-class EvaluationResult(TypedDict):
-    """Structure for evaluation results."""
-    raw_string_match: bool
-    normalized_match: bool
-    cer: float
-    error_category: str
-
 def evaluate_field_extraction(field_type, parsed_value, ground_truth):
     """
     Evaluate field extraction against ground truth.
@@ -172,18 +428,6 @@ def categorize_error(pred, true, field_type):
 ### 1.4 Result Management
 
 ```python
-class ResultEntry(TypedDict):
-    """Structure for a single result entry."""
-    ground_truth: GroundTruthData
-    model_response: ModelResponse
-    evaluation: Dict[str, EvaluationResult]
-
-class ResultStructure(TypedDict):
-    """Structure for complete result file."""
-    meta: Dict[str, str]
-    test_parameters: Dict[str, Any]
-    results_by_image: Dict[str, ResultEntry]
-
 def create_result_structure(model_name, prompt_type, quant_level, environment="RunPod T4 GPU"):
     """
     Create a new result structure for test parameters.
@@ -196,28 +440,6 @@ def create_result_structure(model_name, prompt_type, quant_level, environment="R
         
     Returns:
         ResultStructure: Result structure with metadata and empty results section
-    """
-    
-def log_result(result_path, image_id, model_output, ground_truth, 
-               processing_time, model_name, prompt_type, quant_level, 
-               environment="RunPod T4 GPU"):
-    """
-    Log result for a single image.
-    
-    Args:
-        result_path: Union[str, Path], path to result file
-        image_id: str, image identifier
-        model_output: Dict[str, Any], model output for the image
-        ground_truth: GroundTruthData, ground truth for the image
-        processing_time: float, time taken for processing
-        model_name: str, name of the model being tested
-        prompt_type: str, type of prompt used
-        quant_level: int, quantization level used
-        environment: str, testing environment description
-        
-    Raises:
-        ValueError: If model output is invalid
-        FileNotFoundError: If result file cannot be created
     """
     
 def track_execution(execution_log_path, model_name, prompt_type, 

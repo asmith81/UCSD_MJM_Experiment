@@ -11,6 +11,9 @@ This project evaluates multiple open-source Large Multimodal Models (LMMs) on th
 - Comprehensive evaluation metrics and error analysis
 - Efficient test execution with minimized model reloading
 - Standardized image preprocessing and output parsing
+- Flexible dependency injection for model loading, processing, and storage
+- Protocol-based interfaces for extensibility
+- Advanced visualization and analysis tools
 
 ## Project Structure
 ```
@@ -30,7 +33,11 @@ UCSD_MJM_Experiment/
 │       ├── __init__.py            # Model registry
 │       └── common.py              # Shared model utilities
 ├── notebooks/                      # Jupyter notebooks
-│   └── model_notebook_template.py  # Template for model evaluation
+│   ├── model_notebook_template.py  # Template for model evaluation
+│   ├── pixtral_evaluation.py      # Pixtral model evaluation
+│   ├── llama_vision_evaluation.py # Llama Vision model evaluation
+│   ├── doctr_evaluation.py        # Doctr model evaluation
+│   └── results_analysis.py        # Results analysis and comparison
 ├── docs/                           # Documentation
 │   ├── interface_control_document.md
 │   ├── project_dir.md
@@ -77,24 +84,58 @@ UCSD_MJM_Experiment/
 ## Usage
 
 1. **Model Evaluation**
+   Each model has its own evaluation notebook that follows a consistent structure:
    ```python
    # In notebook
+   import execution
    from src.environment import setup_environment
-   from src.config import load_yaml_config, setup_logging_config
-   from src.models.common import preprocess_image, parse_model_output
+   from src.config import load_yaml_config
+   from src.models.<model_name> import load_model, process_image
+   from src.results_logging import track_execution, log_result
 
-   # Setup environment once at notebook start
+   # Setup environment and logging
    env = setup_environment()
    paths = env['paths']
+   config = load_yaml_config(f'config/{model_name}.yaml')
 
-   # Load and setup config
-   config = load_yaml_config('config/config.yaml')
-   log_config = setup_logging_config(config, paths['logs'])
+   # Run evaluation with dependency injection
+   results = execution.run_test_suite(
+       model_name=MODEL_NAME,
+       test_matrix_path=TEST_MATRIX_PATH,
+       model_loader=load_model,  # Custom model loader
+       processor=process_image,  # Custom image processor
+       prompt_loader=load_prompt,  # Custom prompt loader
+       result_validator=validate_results  # Custom result validator
+   )
    ```
 
 2. **Results Analysis**
-   - Use `results_analysis.ipynb` to analyze and visualize results
-   - Results are stored in `results/` directory
+   The `results_analysis.py` notebook provides comprehensive analysis tools:
+
+   ```python
+   # Load and analyze results
+   results = load_all_results(paths['results'])
+   
+   # Generate visualizations
+   plot_model_comparison(metrics)  # Compare models by field type
+   plot_prompt_comparison(prompt_metrics)  # Compare prompt strategies
+   
+   # Create heatmaps
+   create_performance_heatmap(prompt_metrics, field_type)  # Model vs prompt performance
+   plot_quantization_heatmap(quant_metrics, model, prompt)  # Quantization analysis
+   
+   # Find optimal configurations
+   best_config = find_best_configuration(results, field_type)
+   best_prompt = find_best_prompt_strategy(prompt_metrics, field_type)
+   ```
+
+   Analysis features include:
+   - Model comparison by field type
+   - Prompt strategy analysis
+   - Quantization level comparison
+   - Error distribution analysis
+   - Performance heatmaps
+   - Optimal configuration identification
 
 ## Development Guidelines
 
@@ -105,6 +146,9 @@ UCSD_MJM_Experiment/
 - Use simple configuration files (YAML/JSON)
 - Implement core error handling for critical operations
 - Use shared model utilities for common functionality
+- Implement protocol-based interfaces for extensibility
+- Use dependency injection for model loading, processing, and storage
+- Follow type hints and protocol definitions
 
 ## Documentation
 
@@ -119,6 +163,9 @@ Results are organized by field type and stored in JSON format, including:
 - Processing times
 - Evaluation metrics
 - Error categorization
+- Execution tracking information
+- Storage implementation details
+- Performance heatmaps and visualizations
 
 ## Contributing
 
@@ -126,6 +173,8 @@ Results are organized by field type and stored in JSON format, including:
 2. Document all changes
 3. Update relevant documentation files
 4. Test changes thoroughly
+5. Implement protocol-based interfaces for new components
+6. Use dependency injection for extensibility
 
 ## License
 
@@ -191,19 +240,13 @@ pixtral,8,basic_extraction
 3. Prompt templates define the expected fields and JSON structure
 4. Results are validated against the prompt template structure
 5. Shared utilities handle common preprocessing and parsing
+6. Execution is tracked and logged for each test run
+7. Custom implementations can be injected for model loading, processing, and storage
 
-### Notebook Execution
-```python
-# In notebook
-import execution
-from src.models.common import preprocess_image, parse_model_output
-
-def main():
-    # Set model for this notebook
-    MODEL_NAME = "pixtral"  # or llama_vision or doctr
-    
-    # Run test suite
-    execution.run_test_suite(
-        model_name=MODEL_NAME,
-        test_matrix_path="config/test_matrix.csv"
-    )
+### Notebook Structure
+Each model evaluation notebook follows this structure:
+1. Environment setup and configuration
+2. Model-specific configuration loading
+3. Test suite execution with dependency injection
+4. Results analysis and visualization
+5. Performance metrics by quantization level

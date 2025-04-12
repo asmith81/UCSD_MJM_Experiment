@@ -7,7 +7,7 @@ with stateless functions that transform data.
 """
 
 import pandas as pd
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Callable, Optional, Protocol
 import logging
 from pathlib import Path
 
@@ -17,6 +17,16 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+class ModelLoader(Protocol):
+    """Protocol for model loading functions."""
+    def __call__(self, model_name: str, quantization: int) -> Any:
+        ...
+
+class ModelProcessor(Protocol):
+    """Protocol for model processing functions."""
+    def __call__(self, model: Any, prompt_template: str) -> Dict[str, Any]:
+        ...
 
 def load_test_matrix(test_matrix_path: str) -> pd.DataFrame:
     """
@@ -51,20 +61,36 @@ def load_test_matrix(test_matrix_path: str) -> pd.DataFrame:
         
     return df
 
-def run_test_suite(model_name: str, test_matrix_path: str) -> List[Dict[str, Any]]:
+def run_test_suite(
+    model_name: str, 
+    test_matrix_path: str,
+    model_loader: Optional[ModelLoader] = None,
+    processor: Optional[ModelProcessor] = None,
+    prompt_loader: Optional[Callable[[str], str]] = None,
+    result_validator: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+) -> List[Dict[str, Any]]:
     """
     Run the test suite for a specific model.
     
     Args:
         model_name: Name of the model to test
         test_matrix_path: Path to the test matrix CSV file
+        model_loader: Optional function to load the model
+        processor: Optional function to process images
+        prompt_loader: Optional function to load prompt templates
+        result_validator: Optional function to validate results
         
     Returns:
         List of test results
         
     Raises:
         ValueError: If model_name is not found in test matrix
+        RuntimeError: If required dependencies are not provided
     """
+    # Validate dependencies
+    if not all([model_loader, processor, prompt_loader, result_validator]):
+        raise RuntimeError("All dependencies (model_loader, processor, prompt_loader, result_validator) must be provided")
+    
     # Load and filter test matrix
     test_cases = load_test_matrix(test_matrix_path)
     model_cases = test_cases[test_cases['model'] == model_name]
@@ -77,40 +103,51 @@ def run_test_suite(model_name: str, test_matrix_path: str) -> List[Dict[str, Any
     # Group by quantization to minimize model reloads
     for quantization in sorted(model_cases['quantization'].unique()):
         logger.info(f"Loading model {model_name} with quantization {quantization}")
-        model = load_model(model_name, quantization)
         
-        # Get all prompt strategies for this quantization
-        quantization_cases = model_cases[model_cases['quantization'] == quantization]
-        
-        for _, case in quantization_cases.iterrows():
-            logger.info(f"Running test case: {case['prompt_strategy']}")
-            try:
-                # Load prompt template
-                prompt_template = load_prompt_template(case['prompt_strategy'])
-                
-                # Run inference
-                result = run_inference(model, prompt_template)
-                
-                # Validate and log results
-                validated_result = validate_results(result)
-                
-                # Add test case metadata
-                validated_result.update({
-                    'model': model_name,
-                    'quantization': quantization,
-                    'prompt_strategy': case['prompt_strategy']
-                })
-                
-                results.append(validated_result)
-                
-            except Exception as e:
-                logger.error(f"Error in test case {case['prompt_strategy']}: {str(e)}")
-                results.append({
-                    'model': model_name,
-                    'quantization': quantization,
-                    'prompt_strategy': case['prompt_strategy'],
-                    'error': str(e)
-                })
+        try:
+            # Load model using provided loader
+            model = model_loader(model_name, quantization)
+            
+            # Get all prompt strategies for this quantization
+            quantization_cases = model_cases[model_cases['quantization'] == quantization]
+            
+            for _, case in quantization_cases.iterrows():
+                logger.info(f"Running test case: {case['prompt_strategy']}")
+                try:
+                    # Load prompt template
+                    prompt_template = prompt_loader(case['prompt_strategy'])
+                    
+                    # Run inference
+                    result = processor(model, prompt_template)
+                    
+                    # Validate results
+                    validated_result = result_validator(result)
+                    
+                    # Add test case metadata
+                    validated_result.update({
+                        'model': model_name,
+                        'quantization': quantization,
+                        'prompt_strategy': case['prompt_strategy']
+                    })
+                    
+                    results.append(validated_result)
+                    
+                except Exception as e:
+                    logger.error(f"Error in test case {case['prompt_strategy']}: {str(e)}")
+                    results.append({
+                        'model': model_name,
+                        'quantization': quantization,
+                        'prompt_strategy': case['prompt_strategy'],
+                        'error': str(e)
+                    })
+                    
+        except Exception as e:
+            logger.error(f"Error loading model {model_name} with quantization {quantization}: {str(e)}")
+            results.append({
+                'model': model_name,
+                'quantization': quantization,
+                'error': str(e)
+            })
                 
     return results
 

@@ -5,7 +5,7 @@ Handles image loading and ground truth data management with type normalization.
 
 import os
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Union, TypedDict
+from typing import Dict, Any, List, Optional, Union, TypedDict, Protocol
 import pandas as pd
 import numpy as np
 from PIL import Image
@@ -19,6 +19,27 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+class ImageProcessor(Protocol):
+    """Protocol for image processing functions."""
+    def process_image(self, image: Image.Image, config: 'DataConfig') -> Image.Image:
+        ...
+
+class DefaultImageProcessor:
+    """Default image processing implementation."""
+    def process_image(self, image: Image.Image, config: 'DataConfig') -> Image.Image:
+        """Process image according to configuration."""
+        # Convert format if needed
+        if image.mode not in config['supported_formats']:
+            image = image.convert('RGB')
+            
+        # Resize if needed
+        if max(image.size) > config['max_image_size']:
+            ratio = config['max_image_size'] / max(image.size)
+            new_size = tuple(int(dim * ratio) for dim in image.size)
+            image = image.resize(new_size, Image.Resampling.LANCZOS)
+            
+        return image
+
 class DataConfig(TypedDict):
     """Configuration for data management."""
     image_dir: Path
@@ -26,6 +47,7 @@ class DataConfig(TypedDict):
     image_extensions: List[str]
     max_image_size: int
     supported_formats: List[str]
+    image_processor: Optional[ImageProcessor]
 
 class ImageData(TypedDict):
     """Structure for image data."""
@@ -39,11 +61,21 @@ class GroundTruthData(TypedDict):
     work_order_number: Dict[str, str]
     total_cost: Dict[str, float]
 
-def setup_data_paths(env_config: EnvironmentConfig) -> DataConfig:
+def setup_data_paths(
+    env_config: EnvironmentConfig,
+    image_processor: Optional[ImageProcessor] = None,
+    image_extensions: Optional[List[str]] = None,
+    max_image_size: Optional[int] = None,
+    supported_formats: Optional[List[str]] = None
+) -> DataConfig:
     """Setup data paths using environment configuration.
     
     Args:
         env_config: Environment configuration from environment.py
+        image_processor: Optional image processor implementation
+        image_extensions: Optional list of supported image extensions
+        max_image_size: Optional maximum image size
+        supported_formats: Optional list of supported image formats
         
     Returns:
         DataConfig: Data configuration with paths and settings
@@ -55,9 +87,10 @@ def setup_data_paths(env_config: EnvironmentConfig) -> DataConfig:
         data_config: DataConfig = {
             'image_dir': env_config['data_dir'] / 'images',
             'ground_truth_csv': env_config['data_dir'] / 'ground_truth.csv',
-            'image_extensions': ['.jpg', '.jpeg', '.png'],
-            'max_image_size': 1120,
-            'supported_formats': ['RGB', 'L']
+            'image_extensions': image_extensions or ['.jpg', '.jpeg', '.png'],
+            'max_image_size': max_image_size or 1120,
+            'supported_formats': supported_formats or ['RGB', 'L'],
+            'image_processor': image_processor or DefaultImageProcessor()
         }
         
         # Validate paths
@@ -99,13 +132,18 @@ def validate_data_config(config: DataConfig) -> bool:
         
     return True
 
-def load_image(image_path: Union[str, Path], config: DataConfig) -> Image.Image:
+def load_image(
+    image_path: Union[str, Path],
+    config: DataConfig,
+    processor: Optional[ImageProcessor] = None
+) -> Image.Image:
     """
     Load and validate an invoice image.
     
     Args:
         image_path: Path to the image file
         config: Data configuration
+        processor: Optional image processor implementation
         
     Returns:
         PIL Image object
@@ -122,15 +160,10 @@ def load_image(image_path: Union[str, Path], config: DataConfig) -> Image.Image:
         # Load image
         image = Image.open(image_path)
         
-        # Validate format
-        if image.mode not in config['supported_formats']:
-            image = image.convert('RGB')
-            
-        # Validate size
-        if max(image.size) > config['max_image_size']:
-            ratio = config['max_image_size'] / max(image.size)
-            new_size = tuple(int(dim * ratio) for dim in image.size)
-            image = image.resize(new_size, Image.Resampling.LANCZOS)
+        # Process image using provided processor or config processor
+        processor = processor or config['image_processor']
+        if processor:
+            image = processor.process_image(image, config)
             
         return image
         
