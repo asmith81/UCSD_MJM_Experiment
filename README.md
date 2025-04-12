@@ -10,32 +10,35 @@ This project evaluates multiple open-source Large Multimodal Models (LMMs) on th
 - Systematic comparison of prompt strategies
 - Comprehensive evaluation metrics and error analysis
 - Efficient test execution with minimized model reloading
+- Standardized image preprocessing and output parsing
 
 ## Project Structure
 ```
-invoice-extraction-comparison/
+UCSD_MJM_Experiment/
 ├── config/                         # Configuration files
 │   ├── models/                     # Model-specific configurations
 │   ├── prompts/                    # Field-specific prompt templates
+│   ├── config.yaml                 # Main configuration file
 │   └── test_matrix.csv            # Test configuration matrix
-├── data/                           # Data storage (gitignored)
 ├── src/                            # Source code modules
 │   ├── environment.py              # Environment setup and paths
 │   ├── config.py                   # Configuration management
 │   ├── execution.py                # Test execution framework
+│   ├── data_utils.py               # Data loading and processing
+│   ├── results_logging.py          # Result logging and tracking
 │   └── models/                     # Model implementations
+│       ├── __init__.py            # Model registry
+│       └── common.py              # Shared model utilities
 ├── notebooks/                      # Jupyter notebooks
-├── results/                        # Results storage (gitignored)
-└── docs/                           # Documentation
-    ├── adr/                        # Architecture Decision Records
-    │   ├── 001-configuration-management.md
-    │   ├── 002-prompt-strategy.md  # Single prompt strategy decision
-    │   └── 003-test-matrix-execution.md # Test execution strategy
-    ├── project_overview.md         # Project goals and scope
-    ├── project_rules.md            # Implementation guidelines
-    ├── project_todo.md             # Task list and progress tracking
-    ├── interface_control_document.md # Component interfaces
-    └── project_dir.md              # Detailed directory structure
+│   └── model_notebook_template.py  # Template for model evaluation
+├── docs/                           # Documentation
+│   ├── interface_control_document.md
+│   ├── project_dir.md
+│   └── project_todo.md
+├── tests/                          # Test files
+├── requirements.txt                # Python dependencies
+├── README.md                       # Project overview
+└── .gitignore                     # Git ignore rules
 ```
 
 ## Setup Instructions
@@ -69,7 +72,7 @@ invoice-extraction-comparison/
 3. **Configuration**
    - Review and adjust model configurations in `config/models/`
    - Customize prompts in `config/prompts/`
-   - Configuration is managed through `src/config.py` with dependency injection pattern
+   - Configuration is managed through `src/config.py`
 
 ## Usage
 
@@ -78,6 +81,7 @@ invoice-extraction-comparison/
    # In notebook
    from src.environment import setup_environment
    from src.config import load_yaml_config, setup_logging_config
+   from src.models.common import preprocess_image, parse_model_output
 
    # Setup environment once at notebook start
    env = setup_environment()
@@ -100,19 +104,13 @@ invoice-extraction-comparison/
 - Document all functions with clear docstrings
 - Use simple configuration files (YAML/JSON)
 - Implement core error handling for critical operations
-- Follow dependency injection pattern for configuration management
+- Use shared model utilities for common functionality
 
 ## Documentation
 
-- `docs/adr/`: Architecture Decision Records
-  - `001-configuration-management.md`: Configuration management decisions
-  - `002-prompt-strategy.md`: Single prompt strategy for field extraction
-  - `003-test-matrix-execution.md`: Test matrix and execution strategy
-- `docs/project_overview.md`: Project goals and scope
-- `docs/project_rules.md`: Implementation guidelines
-- `docs/project_todo.md`: Task list and progress tracking
-- `docs/interface_control_document.md`: Component interfaces
+- `docs/interface_control_document.md`: Component interfaces and data structures
 - `docs/project_dir.md`: Detailed directory structure
+- `docs/project_todo.md`: Task list and progress tracking
 
 ## Results
 
@@ -144,6 +142,7 @@ Results are organized by field type and stored in JSON format, including:
 - Optimized for single-image extraction
 - No conversation history needed
 - Simple prompt structure
+- Image preprocessing handled by AutoProcessor
 
 ### Llama-3.2-11B-Vision
 - Direct prompt format with system message
@@ -152,7 +151,7 @@ Results are organized by field type and stored in JSON format, including:
 - Image preprocessing requirements:
   - Max size: 1120x1120
   - RGB conversion
-  - Normalization
+  - Normalization handled by MllamaProcessor
   - Aspect ratio maintenance
 - Higher token limit (2048) for detailed responses
 - No content safety checks (business documents only)
@@ -174,12 +173,6 @@ Results are organized by field type and stored in JSON format, including:
 - Lower hardware requirements (8GB GPU)
 - Higher batch processing capability
 
-## Configuration Management
-- YAML-based configuration files
-- Clear documentation of decisions
-- Environment setup in source modules
-- Model-specific loading and inference functions
-
 ## Test Matrix and Execution
 
 The project uses a systematic approach to testing different model configurations:
@@ -197,11 +190,13 @@ pixtral,8,basic_extraction
 2. Test cases are grouped by quantization to minimize model reloading
 3. Prompt templates define the expected fields and JSON structure
 4. Results are validated against the prompt template structure
+5. Shared utilities handle common preprocessing and parsing
 
 ### Notebook Execution
 ```python
 # In notebook
 import execution
+from src.models.common import preprocess_image, parse_model_output
 
 def main():
     # Set model for this notebook
@@ -211,4 +206,4 @@ def main():
     execution.run_test_suite(
         model_name=MODEL_NAME,
         test_matrix_path="config/test_matrix.csv"
-    ) 
+    )

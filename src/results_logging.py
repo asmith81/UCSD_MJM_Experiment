@@ -7,10 +7,10 @@ import os
 import json
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, TypedDict
 from datetime import datetime
 import pandas as pd
-from .data_utils import normalize_work_order, normalize_total_cost
+from .data_utils import normalize_work_order, normalize_total_cost, GroundTruthData
 
 # Configure logging
 logging.basicConfig(
@@ -18,6 +18,37 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+class ModelOutput(TypedDict):
+    """Structure for model output data."""
+    raw_text: str
+    parsed_value: str
+    normalized_value: Union[str, float]
+
+class ModelResponse(TypedDict):
+    """Structure for model response data."""
+    work_order_number: ModelOutput
+    total_cost: ModelOutput
+    processing_time: float
+
+class EvaluationResult(TypedDict):
+    """Structure for evaluation results."""
+    raw_string_match: bool
+    normalized_match: bool
+    cer: float
+    error_category: str
+
+class ResultEntry(TypedDict):
+    """Structure for a single result entry."""
+    ground_truth: GroundTruthData
+    model_response: ModelResponse
+    evaluation: Dict[str, EvaluationResult]
+
+class ResultStructure(TypedDict):
+    """Structure for complete result file."""
+    meta: Dict[str, str]
+    test_parameters: Dict[str, Any]
+    results_by_image: Dict[str, ResultEntry]
 
 def calculate_cer(pred: str, true: str) -> float:
     """
@@ -102,7 +133,7 @@ def create_result_structure(
     prompt_type: str,
     quant_level: int,
     environment: str = "RunPod T4 GPU"
-) -> Dict[str, Any]:
+) -> ResultStructure:
     """
     Create base result structure for a test run.
     
@@ -160,7 +191,7 @@ def log_result(
     result_path: Union[str, Path],
     image_id: str,
     model_output: Dict[str, Any],
-    ground_truth: Dict[str, Any],
+    ground_truth: GroundTruthData,
     processing_time: float,
     model_name: str,
     prompt_type: str,
@@ -189,7 +220,7 @@ def log_result(
         validate_model_output(model_output)
         
         # Create result entry with both fields
-        result_entry = {
+        result_entry: ResultEntry = {
             "ground_truth": ground_truth,
             "model_response": {
                 "work_order_number": {
@@ -250,7 +281,7 @@ def log_result(
         result_path = Path(result_path)
         if result_path.exists():
             with open(result_path, 'r') as f:
-                results = json.load(f)
+                results: ResultStructure = json.load(f)
         else:
             results = create_result_structure(
                 model_name=model_name,

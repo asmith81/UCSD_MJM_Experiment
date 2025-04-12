@@ -36,10 +36,10 @@ This to-do list is organized for the 8-hour rapid implementation timeline, with 
 ## Phase 2: Model Framework (3 hours)
 
 ### 2.A: Model Infrastructure (1 hour)
-- [ ] 2.1 Create `src/models/__init__.py` with model registry
+- [x] 2.1 Create `src/models/__init__.py` with model registry
   - Model type definitions
   - Factory function for model creation
-- [ ] 2.2 Create `src/models/common.py` with shared functions
+- [x] 2.2 Create `src/models/common.py` with shared functions
   - Image preprocessing
   - Model loading utilities
   - Output parsing common code

@@ -5,11 +5,12 @@ Handles image loading and ground truth data management with type normalization.
 
 import os
 from pathlib import Path
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional, Union, TypedDict
 import pandas as pd
 import numpy as np
 from PIL import Image
 import logging
+from .environment import EnvironmentConfig
 
 # Configure logging
 logging.basicConfig(
@@ -18,12 +19,93 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def load_image(image_path: Union[str, Path]) -> Image.Image:
+class DataConfig(TypedDict):
+    """Configuration for data management."""
+    image_dir: Path
+    ground_truth_csv: Path
+    image_extensions: List[str]
+    max_image_size: int
+    supported_formats: List[str]
+
+class ImageData(TypedDict):
+    """Structure for image data."""
+    image_id: str
+    image_path: Path
+    image_size: tuple[int, int]
+    format: str
+
+class GroundTruthData(TypedDict):
+    """Structure for ground truth data."""
+    work_order_number: Dict[str, str]
+    total_cost: Dict[str, float]
+
+def setup_data_paths(env_config: EnvironmentConfig) -> DataConfig:
+    """Setup data paths using environment configuration.
+    
+    Args:
+        env_config: Environment configuration from environment.py
+        
+    Returns:
+        DataConfig: Data configuration with paths and settings
+        
+    Raises:
+        OSError: If required directories don't exist
+    """
+    try:
+        data_config: DataConfig = {
+            'image_dir': env_config['data_dir'] / 'images',
+            'ground_truth_csv': env_config['data_dir'] / 'ground_truth.csv',
+            'image_extensions': ['.jpg', '.jpeg', '.png'],
+            'max_image_size': 1120,
+            'supported_formats': ['RGB', 'L']
+        }
+        
+        # Validate paths
+        if not data_config['image_dir'].exists():
+            raise OSError(f"Image directory not found: {data_config['image_dir']}")
+        if not data_config['ground_truth_csv'].exists():
+            raise OSError(f"Ground truth CSV not found: {data_config['ground_truth_csv']}")
+            
+        return data_config
+        
+    except Exception as e:
+        logger.error(f"Error setting up data paths: {str(e)}")
+        raise
+
+def validate_data_config(config: DataConfig) -> bool:
+    """Validate data configuration structure.
+    
+    Args:
+        config: Data configuration to validate
+        
+    Returns:
+        True if configuration is valid
+        
+    Raises:
+        ValueError: If configuration is invalid
+    """
+    required_fields = ['image_dir', 'ground_truth_csv', 'image_extensions', 
+                      'max_image_size', 'supported_formats']
+    
+    for field in required_fields:
+        if field not in config:
+            raise ValueError(f"Missing required field in data config: {field}")
+            
+    if not isinstance(config['max_image_size'], int):
+        raise ValueError("max_image_size must be an integer")
+        
+    if not all(isinstance(ext, str) for ext in config['image_extensions']):
+        raise ValueError("image_extensions must be a list of strings")
+        
+    return True
+
+def load_image(image_path: Union[str, Path], config: DataConfig) -> Image.Image:
     """
     Load and validate an invoice image.
     
     Args:
         image_path: Path to the image file
+        config: Data configuration
         
     Returns:
         PIL Image object
@@ -40,9 +122,15 @@ def load_image(image_path: Union[str, Path]) -> Image.Image:
         # Load image
         image = Image.open(image_path)
         
-        # Convert to RGB if necessary
-        if image.mode != 'RGB':
+        # Validate format
+        if image.mode not in config['supported_formats']:
             image = image.convert('RGB')
+            
+        # Validate size
+        if max(image.size) > config['max_image_size']:
+            ratio = config['max_image_size'] / max(image.size)
+            new_size = tuple(int(dim * ratio) for dim in image.size)
+            image = image.resize(new_size, Image.Resampling.LANCZOS)
             
         return image
         
@@ -95,7 +183,7 @@ def normalize_total_cost(value: Union[str, float]) -> float:
         logger.error(f"Could not normalize total cost value: {value}")
         return 0.0
 
-def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, Dict[str, Any]]:
+def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, GroundTruthData]:
     """
     Load and normalize ground truth data from CSV.
     
@@ -124,7 +212,7 @@ def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, Dict[str, Any]]:
             raise ValueError(f"Ground truth CSV missing required columns: {missing_columns}")
             
         # Initialize results dictionary
-        ground_truth = {}
+        ground_truth: Dict[str, GroundTruthData] = {}
         
         # Process each row
         for _, row in df.iterrows():
@@ -152,15 +240,33 @@ def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, Dict[str, Any]]:
         logger.error(f"Error loading ground truth: {str(e)}")
         raise
 
-def validate_image_directory(image_dir: Union[str, Path]) -> List[str]:
+def prepare_data_for_logging(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Prepare data in format expected by results logging.
+    
+    Args:
+        data: Raw data to prepare
+        
+    Returns:
+        Data formatted for logging
+    """
+    return {
+        'raw_data': data,
+        'normalized_data': {
+            'work_order_number': normalize_work_order(data.get('work_order_number', '')),
+            'total_cost': normalize_total_cost(data.get('total_cost', 0.0))
+        }
+    }
+
+def validate_image_directory(image_dir: Union[str, Path], config: DataConfig) -> List[ImageData]:
     """
     Validate image directory and return list of valid image files.
     
     Args:
         image_dir: Path to image directory
+        config: Data configuration
         
     Returns:
-        List of valid image file paths
+        List of valid image data
         
     Raises:
         FileNotFoundError: If directory doesn't exist
@@ -172,13 +278,21 @@ def validate_image_directory(image_dir: Union[str, Path]) -> List[str]:
             raise FileNotFoundError(f"Image directory not found: {image_dir}")
             
         # Get all image files
-        image_files = []
-        valid_extensions = {'.jpg', '.jpeg', '.png'}
+        image_files: List[ImageData] = []
         
         for file in image_dir.glob('*'):
-            if file.suffix.lower() in valid_extensions:
-                image_files.append(str(file))
-                
+            if file.suffix.lower() in config['image_extensions']:
+                try:
+                    with Image.open(file) as img:
+                        image_files.append({
+                            'image_id': file.stem,
+                            'image_path': file,
+                            'image_size': img.size,
+                            'format': img.mode
+                        })
+                except Exception as e:
+                    logger.warning(f"Could not process image {file}: {str(e)}")
+                    
         if not image_files:
             raise ValueError(f"No valid images found in directory: {image_dir}")
             

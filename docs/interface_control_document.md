@@ -35,6 +35,11 @@ def get_model_path(model_name, quant_level):
 ### 1.2 Data Management
 
 ```python
+class GroundTruthData(TypedDict):
+    """Structure for ground truth data."""
+    work_order_number: Dict[str, str]
+    total_cost: Dict[str, Union[str, float]]
+
 def load_image(image_id, image_dir):
     """
     Load image by ID from directory.
@@ -45,6 +50,10 @@ def load_image(image_id, image_dir):
         
     Returns:
         PIL.Image: Loaded image
+        
+    Raises:
+        FileNotFoundError: If image file not found
+        ValueError: If image loading fails
     """
     
 def load_ground_truth(csv_path):
@@ -55,20 +64,11 @@ def load_ground_truth(csv_path):
         csv_path: Path, path to ground truth CSV
         
     Returns:
-        dict: Dictionary mapping image IDs to ground truth data with both raw and normalized values
-              {
-                image_id: {
-                  "work_order_number": {
-                    "raw_value": "20502",
-                    "normalized_value": "20502"
-                  },
-                  "total_cost": {
-                    "raw_value": " 950.00 ",
-                    "normalized_value": 950.00
-                  }
-                },
-                ...
-              }
+        Dict[str, GroundTruthData]: Dictionary mapping image IDs to ground truth data
+        
+    Raises:
+        FileNotFoundError: If CSV file not found
+        ValueError: If CSV parsing fails
     """
     
 def get_field_ground_truth(ground_truth, image_id, field_type):
@@ -76,16 +76,15 @@ def get_field_ground_truth(ground_truth, image_id, field_type):
     Get ground truth for a specific field type and image.
     
     Args:
-        ground_truth: dict, complete ground truth dictionary
+        ground_truth: Dict[str, GroundTruthData], complete ground truth dictionary
         image_id: str, image identifier
         field_type: str, type of field to extract ("work_order_number" or "total_cost")
         
     Returns:
-        dict: Ground truth for specific field
-             {
-               "raw_value": "20502",
-               "normalized_value": "20502"
-             }
+        Dict[str, Union[str, float]]: Ground truth for specific field
+        
+    Raises:
+        KeyError: If image_id or field_type not found
     """
     
 def normalize_cost(value):
@@ -97,12 +96,34 @@ def normalize_cost(value):
         
     Returns:
         float: Normalized cost value
+        
+    Raises:
+        ValueError: If value cannot be normalized
     """
 ```
 
 ### 1.3 Field-Specific Evaluation
 
 ```python
+class ModelOutput(TypedDict):
+    """Structure for model output data."""
+    raw_text: str
+    parsed_value: str
+    normalized_value: Union[str, float]
+
+class ModelResponse(TypedDict):
+    """Structure for model response data."""
+    work_order_number: ModelOutput
+    total_cost: ModelOutput
+    processing_time: float
+
+class EvaluationResult(TypedDict):
+    """Structure for evaluation results."""
+    raw_string_match: bool
+    normalized_match: bool
+    cer: float
+    error_category: str
+
 def evaluate_field_extraction(field_type, parsed_value, ground_truth):
     """
     Evaluate field extraction against ground truth.
@@ -110,20 +131,13 @@ def evaluate_field_extraction(field_type, parsed_value, ground_truth):
     Args:
         field_type: str, type of field ("work_order_number" or "total_cost")
         parsed_value: str, extracted value from model
-        ground_truth: dict, ground truth with raw and normalized values
-                     {
-                       "raw_value": "20502",
-                       "normalized_value": "20502"
-                     }
+        ground_truth: Dict[str, Union[str, float]], ground truth with raw and normalized values
         
     Returns:
-        dict: Evaluation metrics appropriate for field type
-             {
-               "raw_string_match": bool,
-               "normalized_match": bool,
-               "cer": float,
-               "error_category": str
-             }
+        EvaluationResult: Evaluation metrics appropriate for field type
+        
+    Raises:
+        ValueError: If field_type is invalid
     """
     
 def calculate_cer(pred, true):
@@ -149,70 +163,78 @@ def categorize_error(pred, true, field_type):
         
     Returns:
         str: Error category (e.g., "missing_character", "currency_error")
+        
+    Raises:
+        ValueError: If field_type is invalid
     """
 ```
 
 ### 1.4 Result Management
 
 ```python
-def create_result_dict(test_params):
+class ResultEntry(TypedDict):
+    """Structure for a single result entry."""
+    ground_truth: GroundTruthData
+    model_response: ModelResponse
+    evaluation: Dict[str, EvaluationResult]
+
+class ResultStructure(TypedDict):
+    """Structure for complete result file."""
+    meta: Dict[str, str]
+    test_parameters: Dict[str, Any]
+    results_by_image: Dict[str, ResultEntry]
+
+def create_result_structure(model_name, prompt_type, quant_level, environment="RunPod T4 GPU"):
     """
-    Create a new result dictionary for test parameters.
+    Create a new result structure for test parameters.
     
     Args:
-        test_params: dict, parameters for the test
-                    {
-                      "model_name": "pixtral",
-                      "field_type": "total_cost",
-                      "prompt_type": "simple_total",
-                      "quant_level": 4
-                    }
+        model_name: str, name of the model
+        prompt_type: str, type of prompt used
+        quant_level: int, quantization level
+        environment: str, testing environment description
         
     Returns:
-        dict: Result dictionary with metadata and empty results section
+        ResultStructure: Result structure with metadata and empty results section
     """
     
-def add_image_result(result_dict, image_id, ground_truth, 
-                     raw_text, parsed_value, normalized_value, 
-                     processing_time, evaluation):
+def log_result(result_path, image_id, model_output, ground_truth, 
+               processing_time, model_name, prompt_type, quant_level, 
+               environment="RunPod T4 GPU"):
     """
-    Add results for a specific image to the result dictionary.
+    Log result for a single image.
     
     Args:
-        result_dict: dict, result dictionary to update
+        result_path: Union[str, Path], path to result file
         image_id: str, image identifier
-        ground_truth: dict, ground truth for this field and image
-        raw_text: str, raw model output text
-        parsed_value: str, parsed field value from model output
-        normalized_value: str or float, normalized field value
-        processing_time: float, inference time in seconds
-        evaluation: dict, evaluation metrics
+        model_output: Dict[str, Any], model output for the image
+        ground_truth: GroundTruthData, ground truth for the image
+        processing_time: float, time taken for processing
+        model_name: str, name of the model being tested
+        prompt_type: str, type of prompt used
+        quant_level: int, quantization level used
+        environment: str, testing environment description
         
-    Returns:
-        dict: Updated result dictionary
+    Raises:
+        ValueError: If model output is invalid
+        FileNotFoundError: If result file cannot be created
     """
     
-def save_result(result_dict, results_dir):
+def track_execution(execution_log_path, model_name, prompt_type, 
+                   quant_level, status, error=None):
     """
-    Save result dictionary to JSON file.
+    Track execution status for a test run.
     
     Args:
-        result_dict: dict, complete result dictionary
-        results_dir: Path, directory to save results
+        execution_log_path: Union[str, Path], path to execution log file
+        model_name: str, name of the model
+        prompt_type: str, type of prompt used
+        quant_level: int, quantization level used
+        status: str, execution status
+        error: Optional[str], error message if any
         
-    Returns:
-        str: Path to saved file
-    """
-    
-def load_results(results_dir):
-    """
-    Load all result dictionaries from a directory.
-    
-    Args:
-        results_dir: Path, directory containing result JSON files
-        
-    Returns:
-        list: List of result dictionaries
+    Raises:
+        FileNotFoundError: If log file cannot be created
     """
 ```
 
@@ -229,6 +251,10 @@ def load_model(model_name, quant_level):
         
     Returns:
         object: Loaded model
+        
+    Raises:
+        ValueError: If model_name or quant_level is invalid
+        FileNotFoundError: If model files not found
     """
     
 def run_field_inference(model, image, prompt, field_type):
@@ -242,25 +268,11 @@ def run_field_inference(model, image, prompt, field_type):
         field_type: str, type of field to extract
         
     Returns:
-        tuple: (raw_text, parsed_value, normalized_value, processing_time)
-               raw_text: str, complete model output
-               parsed_value: str, extracted field value
-               normalized_value: str or float, field value in normalized form
-               processing_time: float, inference time in seconds
-    """
-    
-def parse_field_value(raw_text, field_type):
-    """
-    Extract field value from model output for specific field type.
-    
-    Args:
-        raw_text: str, raw model output
-        field_type: str, type of field to extract
+        ModelOutput: Model output with raw text, parsed value, and normalized value
         
-    Returns:
-        tuple: (parsed_value, normalized_value)
-               parsed_value: str, extracted field value
-               normalized_value: str or float, normalized field value
+    Raises:
+        ValueError: If field_type is invalid
+        RuntimeError: If inference fails
     """
 ```
 
@@ -696,3 +708,83 @@ prompts:
   - `category`: Classification of the prompt
   - `field_to_extract`: Fields to be extracted
   - `format_instructions`: Output format requirements
+
+## Model Preprocessing
+
+### Image Preprocessing
+```python
+def preprocess_image(
+    image_path: Path,
+    config: DataConfig
+) -> Image.Image:
+    """Preprocess image for model input.
+    
+    Args:
+        image_path: Path to the image file
+        config: Data configuration with preprocessing settings
+        
+    Returns:
+        Preprocessed PIL Image
+        
+    Raises:
+        FileNotFoundError: If image file doesn't exist
+        ValueError: If image processing fails
+    """
+```
+
+The `preprocess_image` function handles:
+- Image loading and RGB conversion
+- Size normalization while maintaining aspect ratio
+- No pixel value normalization (handled by model processors)
+
+### Model Output Parsing
+```python
+def parse_model_output(
+    output: Any,
+    field_type: str,
+    confidence_threshold: float = 0.5
+) -> ModelOutput:
+    """Parse model output into standardized format.
+    
+    Args:
+        output: Raw model output
+        field_type: Type of field being extracted
+        confidence_threshold: Minimum confidence for accepting prediction
+        
+    Returns:
+        ModelOutput dictionary with parsed values
+        
+    Raises:
+        ValueError: If parsing fails
+    """
+```
+
+The `parse_model_output` function handles:
+- Field-specific parsing for work_order_number and total_cost
+- Normalization of values to consistent formats
+- Error handling for invalid formats
+
+### Model Output Validation
+```python
+def validate_model_output(
+    parsed_output: ModelOutput,
+    field_type: str
+) -> bool:
+    """Validate parsed model output.
+    
+    Args:
+        parsed_output: Parsed output dictionary
+        field_type: Type of field being extracted
+        
+    Returns:
+        Whether the output is valid
+        
+    Raises:
+        ValueError: If validation fails
+    """
+```
+
+The `validate_model_output` function handles:
+- Required field validation
+- Field-specific value validation
+- Type checking for normalized values
