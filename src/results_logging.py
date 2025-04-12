@@ -355,4 +355,44 @@ def track_execution(
         
     except Exception as e:
         logger.error(f"Error tracking execution: {str(e)}")
+        raise
+
+def load_result(
+    result_path: Union[str, Path],
+    storage: Optional[ResultStorage] = None
+) -> Dict[str, Any]:
+    """
+    Load result from a file.
+    
+    Args:
+        result_path: Path to result file
+        storage: Optional result storage implementation
+        
+    Returns:
+        Dictionary containing result data
+        
+    Raises:
+        FileNotFoundError: If result file doesn't exist
+        ValueError: If result data is invalid
+    """
+    try:
+        # Use provided storage or default
+        storage = storage or FileSystemStorage()
+        
+        # Load result
+        result = storage.load_result(result_path)
+        
+        # Validate structure
+        if not isinstance(result, dict):
+            raise ValueError("Invalid result data structure")
+            
+        required_fields = ['meta', 'test_parameters', 'results_by_image']
+        missing_fields = [field for field in required_fields if field not in result]
+        if missing_fields:
+            raise ValueError(f"Missing required fields in result: {missing_fields}")
+            
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error loading result from {result_path}: {str(e)}")
         raise 

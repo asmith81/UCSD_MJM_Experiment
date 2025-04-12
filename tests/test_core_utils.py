@@ -5,7 +5,7 @@ Tests for core utilities that can run in both local and remote environments.
 import pytest
 from pathlib import Path
 from src.environment import setup_paths, check_cuda_availability, get_environment_overrides
-from src.data_utils import load_image, validate_ground_truth
+from src.data_utils import load_image, validate_ground_truth, DataConfig, DefaultImageProcessor
 from src.results_logging import log_result, load_result
 
 def test_setup_paths(project_root: Path):
@@ -52,9 +52,19 @@ def test_mock_data_loading(mock_data_dir: Path):
     if not mock_data_dir.exists():
         mock_data_dir.mkdir(parents=True)
     
+    # Create test config
+    test_config: DataConfig = {
+        'image_dir': mock_data_dir,
+        'ground_truth_csv': mock_data_dir / "ground_truth.csv",
+        'image_extensions': ['.jpg', '.jpeg', '.png'],
+        'max_image_size': 1120,
+        'supported_formats': ['RGB', 'L'],
+        'image_processor': DefaultImageProcessor()
+    }
+    
     # Test image loading
     try:
-        image = load_image(mock_image)
+        image = load_image(mock_image, test_config)
         assert image is not None
     except FileNotFoundError:
         pytest.skip("Mock image not found")
@@ -68,23 +78,52 @@ def test_mock_data_loading(mock_data_dir: Path):
 
 def test_result_logging(project_root: Path):
     """Test result logging functionality."""
-    test_result = {
-        "model": "test_model",
-        "quantization": 32,
-        "prompt_strategy": "test",
-        "raw_value": "TEST123",
-        "normalized_value": "TEST123",
-        "confidence": 0.95,
-        "processing_time": 0.1
+    # Create test data
+    test_model_output = {
+        'work_order_number': {
+            'raw_text': 'TEST123',
+            'parsed_value': 'TEST123',
+            'normalized_value': 'TEST123'
+        },
+        'total_cost': {
+            'raw_text': '$100.00',
+            'parsed_value': '100.00',
+            'normalized_value': 100.00
+        }
+    }
+    
+    test_ground_truth = {
+        'work_order_number': {
+            'raw_value': 'TEST123',
+            'normalized_value': 'TEST123'
+        },
+        'total_cost': {
+            'raw_value': '$100.00',
+            'normalized_value': 100.00
+        }
     }
     
     # Test logging
     result_path = project_root / "results" / "test_result.json"
-    log_result(result_path, test_result)
+    log_result(
+        result_path=result_path,
+        image_id='test_image',
+        model_output=test_model_output,
+        ground_truth=test_ground_truth,
+        processing_time=0.1,
+        model_name='test_model',
+        prompt_type='basic',
+        quant_level=32
+    )
     
     # Test loading
     loaded_result = load_result(result_path)
-    assert loaded_result == test_result
+    assert loaded_result is not None
+    assert 'meta' in loaded_result
+    assert 'test_parameters' in loaded_result
+    assert 'results_by_image' in loaded_result
+    assert 'test_image' in loaded_result['results_by_image']
     
     # Cleanup
-    result_path.unlink() 
+    if result_path.exists():
+        result_path.unlink() 

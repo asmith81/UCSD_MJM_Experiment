@@ -333,4 +333,51 @@ def validate_image_directory(image_dir: Union[str, Path], config: DataConfig) ->
         
     except Exception as e:
         logger.error(f"Error validating image directory: {str(e)}")
+        raise
+
+def validate_ground_truth(ground_truth_path: Union[str, Path]) -> Dict[str, Any]:
+    """
+    Validate ground truth data from a file.
+    
+    Args:
+        ground_truth_path: Path to ground truth file
+        
+    Returns:
+        Dictionary containing validated ground truth data
+        
+    Raises:
+        FileNotFoundError: If file doesn't exist
+        ValueError: If data is invalid
+    """
+    try:
+        ground_truth_path = Path(ground_truth_path)
+        if not ground_truth_path.exists():
+            raise FileNotFoundError(f"Ground truth file not found: {ground_truth_path}")
+            
+        # Load and validate data
+        if ground_truth_path.suffix == '.csv':
+            data = load_ground_truth(ground_truth_path)
+        else:
+            raise ValueError(f"Unsupported ground truth file format: {ground_truth_path.suffix}")
+            
+        # Validate structure
+        for image_id, gt_data in data.items():
+            if not isinstance(gt_data, dict):
+                raise ValueError(f"Invalid ground truth data for image {image_id}")
+                
+            if 'work_order_number' not in gt_data or 'total_cost' not in gt_data:
+                raise ValueError(f"Missing required fields in ground truth data for image {image_id}")
+                
+            # Validate work order number
+            if not isinstance(gt_data['work_order_number'], dict):
+                raise ValueError(f"Invalid work order number data for image {image_id}")
+                
+            # Validate total cost
+            if not isinstance(gt_data['total_cost'], dict):
+                raise ValueError(f"Invalid total cost data for image {image_id}")
+                
+        return data
+        
+    except Exception as e:
+        logger.error(f"Error validating ground truth data: {str(e)}")
         raise 
