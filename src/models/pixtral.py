@@ -86,24 +86,31 @@ class PixtralModel:
                 use_fast=True
             )
             
+            # Set default dtype based on quantization
+            if self.quantization in [4, 8, 16]:
+                default_dtype = torch.float16
+            else:
+                default_dtype = torch.float32
+            
             # Load model with quantization
             if self.quantization == 32:
                 self.model = AutoModelForVision2Seq.from_pretrained(
                     self.model_path,
                     device_map="auto",
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 16:
                 self.model = AutoModelForVision2Seq.from_pretrained(
                     self.model_path,
                     device_map="auto",
                     low_cpu_mem_usage=True,
-                    torch_dtype=torch.float16
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
-                    bnb_8bit_compute_dtype=torch.float16,
+                    bnb_8bit_compute_dtype=default_dtype,
                     bnb_8bit_use_double_quant=True
                 )
                 self.model = AutoModelForVision2Seq.from_pretrained(
@@ -115,7 +122,7 @@ class PixtralModel:
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
-                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_compute_dtype=default_dtype,
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4"
                 )
@@ -168,13 +175,18 @@ class PixtralModel:
                 return_tensors="pt"
             ).to(self.device)
             
+            # Convert inputs to match model's dtype
+            if self.quantization in [4, 8, 16]:
+                inputs = {k: v.to(torch.float16) for k, v in inputs.items()}
+            
             # Run inference
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=50,
                     num_return_sequences=1,
-                    temperature=0.7
+                    temperature=0.7,
+                    do_sample=True  # Enable sampling since we're using temperature
                 )
                 
             # Decode output

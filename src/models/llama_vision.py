@@ -86,11 +86,17 @@ class LlamaVisionModel:
                 use_fast=True  # Enable fast processing
             )
             
+            # Set default dtype based on quantization
+            if self.quantization in [4, 8, 16]:
+                default_dtype = torch.float16
+            else:
+                default_dtype = torch.float32
+            
             # Load model with quantization
             if self.quantization == 32:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    torch_dtype=torch.float32,
+                    torch_dtype=default_dtype,
                     device_map="auto",
                     trust_remote_code=True,
                     low_cpu_mem_usage=True
@@ -98,7 +104,7 @@ class LlamaVisionModel:
             elif self.quantization == 16:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    torch_dtype=torch.float16,
+                    torch_dtype=default_dtype,
                     device_map="auto",
                     trust_remote_code=True,
                     low_cpu_mem_usage=True
@@ -106,7 +112,7 @@ class LlamaVisionModel:
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
-                    bnb_8bit_compute_dtype=torch.float16,
+                    bnb_8bit_compute_dtype=default_dtype,
                     bnb_8bit_use_double_quant=True
                 )
                 self.model = MllamaForConditionalGeneration.from_pretrained(
@@ -119,7 +125,7 @@ class LlamaVisionModel:
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
-                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_compute_dtype=default_dtype,
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4"
                 )
