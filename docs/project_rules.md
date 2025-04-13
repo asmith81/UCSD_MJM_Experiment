@@ -296,4 +296,25 @@ Despite the rapid implementation focus, maintain these quality standards:
 3. Results should be logged consistently
 4. Code should be readable and maintainable
 5. Processing pipeline should be resumable after crashes
-```
+
+## Model Processing Rules
+
+1. **Input Format Standardization**
+   - All models must use the standardized chat-style input format
+   - Input processing must use AutoProcessor for consistency
+   - Support both text and image inputs in unified format
+
+2. **Model Loading**
+   - Use AutoModelForVision2Seq for model loading
+   - Support both local and HuggingFace model loading
+   - Implement standardized model configuration
+
+3. **Processing Pipeline**
+   - Follow the standardized processing pipeline
+   - Use consistent tensor handling and processing
+   - Implement unified error handling and logging
+
+4. **Result Handling**
+   - Use standardized output format for all models
+   - Implement consistent result validation
+   - Follow unified logging and reporting guidelines

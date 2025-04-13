@@ -17,8 +17,34 @@ class ModelLoader(Protocol):
 ```python
 class ModelProcessor(Protocol):
     """Protocol for model processing functions."""
-    def __call__(self, model: Any, image: Union[ImageData, Image.Image], prompt: str) -> ModelResponse:
-        ...
+    def __call__(
+        self, 
+        model: Any, 
+        image: Union[ImageData, Image.Image], 
+        prompt: str
+    ) -> ModelResponse:
+        """Process an image with a model using chat-style input format.
+        
+        Args:
+            model: Loaded model instance
+            image: Input image data
+            prompt: Text prompt for the model
+            
+        Returns:
+            ModelResponse containing the processed results
+            
+        Note:
+            All models use a standardized chat-style input format:
+            [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "content": prompt},
+                        {"type": "image"}
+                    ]
+                }
+            ]
+        """
 ```
 
 ### Result Storage Protocol
@@ -1076,4 +1102,43 @@ def process_image(
     Returns:
         ModelResponse containing extraction results
     """
+```
+
+### Chat-Style Input Format
+```python
+class ChatInput(TypedDict):
+    """Structure for chat-style model inputs."""
+    role: str  # "user" or "assistant"
+    content: List[Dict[str, str]]  # List of content items with type and content
+
+class ContentItem(TypedDict):
+    """Structure for individual content items in chat input."""
+    type: str  # "text" or "image"
+    content: str  # For text, the actual content; for image, placeholder
+```
+
+### Model Input Processing
+```python
+class ModelInputProcessor(Protocol):
+    """Protocol for processing model inputs."""
+    def apply_chat_template(
+        self,
+        chat: List[ChatInput],
+        add_generation_prompt: bool = True,
+        tokenize: bool = True,
+        return_dict: bool = True,
+        return_tensors: str = "pt"
+    ) -> Dict[str, torch.Tensor]:
+        """Process chat-style inputs into model-ready tensors.
+        
+        Args:
+            chat: List of chat messages in standardized format
+            add_generation_prompt: Whether to add generation prompt
+            tokenize: Whether to tokenize the input
+            return_dict: Whether to return as dictionary
+            return_tensors: Format of returned tensors ("pt" for PyTorch)
+            
+        Returns:
+            Dictionary of processed tensors ready for model input
+        """
 ```

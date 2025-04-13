@@ -96,18 +96,16 @@ class LlamaVisionModel:
             if self.quantization == 32:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    torch_dtype=default_dtype,
                     device_map="auto",
-                    trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 16:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    torch_dtype=default_dtype,
                     device_map="auto",
-                    trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
@@ -118,7 +116,6 @@ class LlamaVisionModel:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     device_map="auto",
-                    trust_remote_code=True,
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config
                 )
@@ -132,7 +129,6 @@ class LlamaVisionModel:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     device_map="auto",
-                    trust_remote_code=True,
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config
                 )
@@ -172,44 +168,35 @@ class LlamaVisionModel:
             # Preprocess image
             image = preprocess_image(Path(image_path), config)
             
-            # Prepare model inputs
-            inputs = self.processor(
-                image,
-                return_tensors="pt",
-                padding=True
-            ).to(self.device)
+            # Format chat-style input
+            chat = [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "content": prompt},
+                    {"type": "image"}
+                ]
+            }]
             
-            # Convert inputs to match model's dtype
-            if self.quantization in [4, 8, 16]:
-                for k, v in inputs.items():
-                    if k in ['input_ids', 'attention_mask', 'position_ids']:
-                        inputs[k] = v.to(torch.long)  # Keep as integer type
-                    else:
-                        inputs[k] = v.to(torch.float16)
+            # Apply chat template and process inputs
+            inputs = self.processor.apply_chat_template(
+                chat,
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
+                return_tensors="pt"
+            ).to(self.device)
             
             # Run inference
             with torch.no_grad():
-                # Ensure inputs are in the correct format
-                if 'pixel_values' in inputs:
-                    inputs['pixel_values'] = inputs['pixel_values'].to(self.device)
-                if 'input_ids' in inputs:
-                    inputs['input_ids'] = inputs['input_ids'].to(self.device)
-                if 'attention_mask' in inputs:
-                    inputs['attention_mask'] = inputs['attention_mask'].to(self.device)
-                
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=50,
                     num_return_sequences=1,
                     temperature=0.7,
-                    do_sample=True,  # Enable sampling since we're using temperature
+                    do_sample=True,
                     pad_token_id=self.processor.tokenizer.pad_token_id,
                     eos_token_id=self.processor.tokenizer.eos_token_id
                 )
-                
-            # Ensure outputs are in the correct format
-            if isinstance(outputs, torch.Tensor):
-                outputs = outputs.unsqueeze(0) if outputs.dim() == 1 else outputs
                 
             # Decode output
             output_text = self.processor.decode(outputs[0], skip_special_tokens=True)

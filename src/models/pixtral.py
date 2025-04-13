@@ -8,7 +8,7 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import LlavaForConditionalGeneration, AutoTokenizer, AutoProcessor, AutoModelForVision2Seq
+from transformers import LlavaForConditionalGeneration, AutoProcessor
 from PIL import Image
 import logging
 from pathlib import Path
@@ -94,14 +94,14 @@ class PixtralModel:
             
             # Load model with quantization
             if self.quantization == 32:
-                self.model = AutoModelForVision2Seq.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
                     device_map="auto",
                     low_cpu_mem_usage=True,
                     torch_dtype=default_dtype
                 )
             elif self.quantization == 16:
-                self.model = AutoModelForVision2Seq.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
                     device_map="auto",
                     low_cpu_mem_usage=True,
@@ -113,7 +113,7 @@ class PixtralModel:
                     bnb_8bit_compute_dtype=default_dtype,
                     bnb_8bit_use_double_quant=True
                 )
-                self.model = AutoModelForVision2Seq.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
                     device_map="auto",
                     low_cpu_mem_usage=True,
@@ -126,7 +126,7 @@ class PixtralModel:
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4"
                 )
-                self.model = AutoModelForVision2Seq.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
                     device_map="auto",
                     low_cpu_mem_usage=True,
@@ -168,44 +168,35 @@ class PixtralModel:
             # Preprocess image
             image = preprocess_image(Path(image_path), config)
             
-            # Prepare inputs using processor
-            inputs = self.processor(
-                text=prompt,
-                images=image,
+            # Format chat-style input
+            chat = [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "content": prompt},
+                    {"type": "image"}
+                ]
+            }]
+            
+            # Apply chat template and process inputs
+            inputs = self.processor.apply_chat_template(
+                chat,
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
                 return_tensors="pt"
             ).to(self.device)
             
-            # Convert inputs to match model's dtype
-            if self.quantization in [4, 8, 16]:
-                for k, v in inputs.items():
-                    if k in ['input_ids', 'attention_mask', 'position_ids']:
-                        inputs[k] = v.to(torch.long)  # Keep as integer type
-                    else:
-                        inputs[k] = v.to(torch.float16)
-            
             # Run inference
             with torch.no_grad():
-                # Ensure inputs are in the correct format
-                if 'pixel_values' in inputs:
-                    inputs['pixel_values'] = inputs['pixel_values'].to(self.device)
-                if 'input_ids' in inputs:
-                    inputs['input_ids'] = inputs['input_ids'].to(self.device)
-                if 'attention_mask' in inputs:
-                    inputs['attention_mask'] = inputs['attention_mask'].to(self.device)
-                
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=50,
                     num_return_sequences=1,
                     temperature=0.7,
-                    do_sample=True,  # Enable sampling since we're using temperature
+                    do_sample=True,
                     pad_token_id=self.processor.tokenizer.pad_token_id,
                     eos_token_id=self.processor.tokenizer.eos_token_id
                 )
-                
-            # Ensure outputs are in the correct format
-            if isinstance(outputs, torch.Tensor):
-                outputs = outputs.unsqueeze(0) if outputs.dim() == 1 else outputs
                 
             # Decode output
             output_text = self.processor.batch_decode(

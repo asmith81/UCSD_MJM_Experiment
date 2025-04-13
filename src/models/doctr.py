@@ -13,7 +13,7 @@ from PIL import Image
 import logging
 from pathlib import Path
 import time
-from transformers import BitsAndBytesConfig
+from transformers import BitsAndBytesConfig, AutoProcessor
 import numpy as np
 
 from .common import (
@@ -63,6 +63,7 @@ class DoctrModel:
         self.quantization = quantization
         self.device = device
         self.model = None
+        self.processor = None
         self._load_model()
         
     def _load_model(self) -> None:
@@ -79,6 +80,12 @@ class DoctrModel:
             missing_files = [f for f in required_files if not (self.model_path / f).exists()]
             if missing_files:
                 raise FileNotFoundError(f"Missing required model files: {missing_files}")
+            
+            # Load processor
+            self.processor = AutoProcessor.from_pretrained(
+                str(self.model_path),
+                use_fast=True
+            )
             
             # Set default dtype based on quantization
             if self.quantization in [4, 8, 16]:
@@ -168,6 +175,24 @@ class DoctrModel:
             
             # Preprocess image
             image = preprocess_image(Path(image_path), config)
+            
+            # Format chat-style input
+            chat = [{
+                "role": "user",
+                "content": [
+                    {"type": "text", "content": prompt},
+                    {"type": "image"}
+                ]
+            }]
+            
+            # Apply chat template and process inputs
+            inputs = self.processor.apply_chat_template(
+                chat,
+                add_generation_prompt=True,
+                tokenize=True,
+                return_dict=True,
+                return_tensors="pt"
+            ).to(self.device)
             
             # Run inference
             with torch.no_grad():
