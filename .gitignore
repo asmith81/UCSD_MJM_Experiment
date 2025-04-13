@@ -64,7 +64,7 @@ Thumbs.db
 *.sqlite3
 
 # Model related
-models/
+# models/
 *.h5
 *.hdf5
 *.pkl
@@ -83,7 +83,7 @@ wandb/
 mlruns/
 tensorboard/
 
-!src/models/.
+!src/models/
 
 # Data (excluding ground-truth)
 data/raw/
