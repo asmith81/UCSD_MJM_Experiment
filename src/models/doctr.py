@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 import time
 from transformers import BitsAndBytesConfig
+import numpy as np
 
 from .common import (
     preprocess_image,
@@ -170,7 +171,13 @@ class DoctrModel:
             
             # Run inference
             with torch.no_grad():
-                doc = self.model([image])
+                # Convert image to tensor and handle dtype
+                if self.quantization in [4, 8, 16]:
+                    image_tensor = torch.from_numpy(np.array(image)).to(torch.float16)
+                else:
+                    image_tensor = torch.from_numpy(np.array(image)).to(torch.float32)
+                
+                doc = self.model([image_tensor])
                 
             # Extract text
             output_text = " ".join([word for page in doc.pages for word in page.words])
