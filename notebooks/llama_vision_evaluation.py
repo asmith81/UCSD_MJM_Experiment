@@ -144,6 +144,8 @@ except Exception as e:
     logger.error(f"Error loading model configuration: {str(e)}")
     raise
 
+print(f"✓ Model configuration loaded successfully for {MODEL_NAME}")
+
 # Set model for this notebook
 MODEL_NAME = "llama_vision"
 TEST_MATRIX_PATH = str(ROOT_DIR / "config" / "test_matrix.json")
@@ -221,8 +223,7 @@ def main():
             test_matrix_path=TEST_MATRIX_PATH,
             model_loader=lambda name, quant: load_model(
                 model_name=name,
-                quantization=quant,
-                model_path=env['models_dir'] / model_config['path']
+                quantization=quant
             ),
             processor=lambda model, prompt, test_case: process_image_wrapper(
                 model=model,

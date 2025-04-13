@@ -117,6 +117,40 @@ def install_dependencies(requirements_path: Path) -> bool:
         logging.error(f"Failed to install dependencies: {str(e)}")
         return False
 
+def download_model(model_name: str, model_path: Path, repo_id: str) -> bool:
+    """
+    Download model from HuggingFace.
+    
+    Args:
+        model_name: Name of the model
+        model_path: Path where model should be downloaded
+        repo_id: HuggingFace repository ID
+        
+    Returns:
+        bool: True if download successful, False otherwise
+        
+    Raises:
+        RuntimeError: If download fails
+    """
+    try:
+        from huggingface_hub import snapshot_download
+        
+        if model_path.exists():
+            logging.info(f"Model {model_name} already exists at {model_path}")
+            return True
+            
+        logging.info(f"Downloading model {model_name} from {repo_id}")
+        snapshot_download(
+            repo_id=repo_id,
+            local_dir=str(model_path),
+            local_dir_use_symlinks=False
+        )
+        return True
+        
+    except Exception as e:
+        logging.error(f"Failed to download model {model_name}: {str(e)}")
+        return False
+
 def setup_environment(project_root: Path, requirements_path: Path) -> EnvironmentConfig:
     """
     Setup complete project environment.

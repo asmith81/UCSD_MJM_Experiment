@@ -211,25 +211,66 @@ class LlamaVisionModel:
             logger.error(f"Error processing image: {str(e)}")
             raise
 
-# Protocol-compatible wrapper functions
-def load_model(model_name: str, quantization: int) -> LlamaVisionModel:
+def download_llama_vision_model(model_path: Path, repo_id: str) -> bool:
+    """Download Llama Vision model from HuggingFace.
+    
+    Args:
+        model_path: Path where model should be downloaded
+        repo_id: HuggingFace repository ID
+        
+    Returns:
+        bool: True if download successful, False otherwise
+        
+    Raises:
+        RuntimeError: If download fails
+    """
+    try:
+        from huggingface_hub import snapshot_download
+        
+        if model_path.exists():
+            logger.info(f"Model already exists at {model_path}")
+            return True
+            
+        logger.info(f"Downloading Llama Vision model from {repo_id}")
+        snapshot_download(
+            repo_id=repo_id,
+            local_dir=str(model_path),
+            local_dir_use_symlinks=False
+        )
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to download Llama Vision model: {str(e)}")
+        return False
+
+def load_model(model_name: str, quantization: int, models_dir: Path, config: dict) -> LlamaVisionModel:
     """Load Llama Vision model with specified quantization.
     
     Args:
         model_name: Name of the model (must be 'llama_vision')
         quantization: Bit width for quantization (4, 8, 16, 32)
+        models_dir: Path to models directory
+        config: Model configuration from YAML
         
     Returns:
         Loaded LlamaVisionModel instance
         
     Raises:
         ValueError: If model_name is not 'llama_vision'
+        FileNotFoundError: If model directory doesn't exist
     """
     if model_name != "llama_vision":
         raise ValueError(f"Invalid model name for Llama Vision loader: {model_name}")
         
+    model_path = models_dir / "llama-vision-11b"
+    
+    # Download model if needed
+    if not model_path.exists():
+        if not download_llama_vision_model(model_path, config['repo_id']):
+            raise RuntimeError(f"Failed to download Llama Vision model to {model_path}")
+        
     return LlamaVisionModel(
-        model_path="models/llama-3.2-11b-vision",
+        model_path=model_path,
         quantization=quantization
     )
 

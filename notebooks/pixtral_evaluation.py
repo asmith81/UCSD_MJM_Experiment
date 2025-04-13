@@ -70,9 +70,9 @@ except subprocess.CalledProcessError as e:
 
 # Import project modules
 from src import execution
-from src.environment import setup_environment
+from src.environment import setup_environment, download_model
 from src.config import load_yaml_config
-from src.models.pixtral import load_model, process_image_wrapper
+from src.models.pixtral import load_model, process_image_wrapper, download_pixtral_model
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 from src.validation import validate_results
@@ -94,6 +94,11 @@ try:
     # Ensure required directories exist
     for path in required_paths:
         env[path].mkdir(parents=True, exist_ok=True)
+    
+    # Download model if needed
+    model_path = env['models_dir'] / "pixtral-12b"
+    if not download_model("pixtral", model_path, config['repo_id']):
+        raise RuntimeError("Failed to download model")
     
 except Exception as e:
     logger.error(f"Error setting up environment: {str(e)}")
@@ -186,6 +191,32 @@ except Exception as e:
     logger.error(f"Error loading model configuration: {str(e)}")
     raise
 
+print(f"✓ Model configuration loaded successfully for {MODEL_NAME}")
+
+# %% [markdown]
+# ## Model Download
+# 
+# Download the model if it doesn't exist locally.
+
+# %%
+from src.models.pixtral import download_pixtral_model
+
+# Set up model path
+model_path = env['models_dir'] / "pixtral-12b"
+
+# Download model if needed
+try:
+    if not model_path.exists():
+        print(f"Downloading {MODEL_NAME} model...")
+        if not download_pixtral_model(model_path, config['repo_id']):
+            raise RuntimeError(f"Failed to download {MODEL_NAME} model")
+        print(f"✓ {MODEL_NAME} model downloaded successfully")
+    else:
+        print(f"✓ {MODEL_NAME} model already exists at {model_path}")
+except Exception as e:
+    logger.error(f"Error downloading model: {str(e)}")
+    raise
+
 # %% [markdown]
 # ## Run Test Suite
 # 
@@ -218,7 +249,8 @@ def main():
             model_loader=lambda name, quant: load_model(
                 model_name=name,
                 quantization=quant,
-                model_path=env['models_dir'] / config['name']
+                models_dir=env['models_dir'],
+                config=config
             ),
             processor=lambda model, prompt, test_case: process_image_wrapper(
                 model=model,

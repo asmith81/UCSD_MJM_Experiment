@@ -72,7 +72,7 @@ except subprocess.CalledProcessError as e:
 from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.doctr import load_model, process_image_wrapper
+from src.models.doctr import load_model, process_image_wrapper, download_doctr_model
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 from src.validation import validate_results
@@ -186,6 +186,42 @@ except Exception as e:
     logger.error(f"Error loading model configuration: {str(e)}")
     raise
 
+print(f"✓ Model configuration loaded successfully for {MODEL_NAME}")
+
+# Model Download
+from src.models.doctr import download_doctr_model
+
+# Set up model path
+model_path = env['models_dir'] / "doctr"
+
+# Download model if needed
+if not model_path.exists():
+    logger.info("Model not found locally. Downloading...")
+    if download_doctr_model(model_path, config['repo_id']):
+        logger.info("Model downloaded successfully")
+    else:
+        logger.error("Failed to download model")
+        raise RuntimeError("Model download failed")
+else:
+    logger.info("Model already exists locally")
+
+# Model Loader
+try:
+    # The config is already loaded and validated with required sections
+    # We can use the config directly as it matches our needs
+    model_loader = lambda name, quant: load_model(
+        model_name=name,
+        quantization=quant,
+        model_path=env['models_dir'] / config['name']
+    )
+    
+    # Validate model loader
+    if not callable(model_loader):
+        raise ValueError("Model loader must be a callable function")
+except Exception as e:
+    logger.error(f"Error loading model: {str(e)}")
+    raise
+
 # %% [markdown]
 # ## Run Test Suite
 # 
@@ -215,11 +251,7 @@ def main():
         results = execution.run_test_suite(
             model_name=MODEL_NAME,
             test_matrix_path=TEST_MATRIX_PATH,
-            model_loader=lambda name, quant: load_model(
-                model_name=name,
-                quantization=quant,
-                model_path=env['models_dir'] / config['name']
-            ),
+            model_loader=model_loader,
             processor=lambda model, prompt, test_case: process_image_wrapper(
                 model=model,
                 prompt_template=prompt,
