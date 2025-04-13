@@ -26,7 +26,7 @@ class ModelLoader(Protocol):
 
 class ModelProcessor(Protocol):
     """Protocol for model processing functions."""
-    def __call__(self, model: Any, prompt_template: str) -> Dict[str, Any]:
+    def __call__(self, model: Any, prompt_template: str, case: Dict[str, Any]) -> Dict[str, Any]:
         ...
 
 def load_test_matrix(test_matrix_path: str) -> List[Dict[str, Any]]:
@@ -122,14 +122,14 @@ def run_test_suite(
             # Get all prompt strategies for this quantization
             quantization_cases = [case for case in model_cases if case['quant_level'] == quantization]
             
-            for _, case in quantization_cases.iterrows():
+            for case in quantization_cases:
                 logger.info(f"Running test case: {case['prompt_type']}")
                 try:
                     # Load prompt template
                     prompt_template = prompt_loader(case['prompt_type'])
                     
                     # Run inference
-                    result = processor(model, prompt_template)
+                    result = processor(model, prompt_template, case)
                     
                     # Validate results
                     validated_result = result_validator(result)
