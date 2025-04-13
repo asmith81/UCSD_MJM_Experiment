@@ -135,6 +135,9 @@ class PixtralModel:
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
                 
+            # Tie weights to avoid warning
+            self.model.tie_weights()
+                
             logger.info("Model loaded successfully")
             
         except Exception as e:

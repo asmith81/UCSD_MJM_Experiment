@@ -236,7 +236,6 @@ class DoctrModel:
                 },
                 'model_response': {
                     'output': output_text,
-                    'parsed_value': parsed_value,
                     'processing_time': processing_time
                 },
                 'evaluation': {
