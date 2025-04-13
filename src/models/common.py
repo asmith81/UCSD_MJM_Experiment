@@ -23,15 +23,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def preprocess_image(
-    image_path: Union[str, Path],
-    config: DataConfig
-) -> Image.Image:
-    """Preprocess image for model input.
+def preprocess_image(image_path: Union[str, Path], config: DataConfig) -> Image.Image:
+    """Preprocess an image for model input.
     
     Args:
-        image_path: Path to the image file (can be relative or absolute)
-        config: Data configuration with preprocessing settings
+        image_path: Path to the image file
+        config: Data configuration containing image processing settings
         
     Returns:
         Preprocessed PIL Image
@@ -41,29 +38,41 @@ def preprocess_image(
         ValueError: If image processing fails
     """
     try:
-        # Convert to Path and ensure absolute path
+        # Convert to Path object if string
         image_path = Path(image_path)
+        
+        # If path is relative, join with image_dir
         if not image_path.is_absolute():
-            # If path is relative, join with image_dir from config
-            image_path = config['image_dir'] / image_path
-            
-        # Load image
+            # Remove any leading 'data/images' from the path to avoid duplication
+            path_str = str(image_path)
+            if path_str.startswith('data/images/'):
+                path_str = path_str[12:]  # Remove 'data/images/'
+            image_path = config.image_dir / path_str
+        
         if not image_path.exists():
             raise FileNotFoundError(f"Image file not found: {image_path}")
             
-        image = Image.open(image_path).convert('RGB')
+        # Load and process image
+        image = Image.open(image_path)
         
-        # Resize maintaining aspect ratio
-        if max(image.size) > config['max_image_size']:
-            ratio = config['max_image_size'] / max(image.size)
-            new_size = tuple(int(dim * ratio) for dim in image.size)
-            image = image.resize(new_size, Image.Resampling.LANCZOS)
+        # Convert to RGB if needed
+        if image.mode not in config.supported_formats:
+            image = image.convert('RGB')
             
+        # Resize if needed
+        if config.max_image_size:
+            # Calculate new size while maintaining aspect ratio
+            ratio = min(config.max_image_size / max(image.size), 1.0)
+            new_size = tuple(int(dim * ratio) for dim in image.size)
+            if new_size != image.size:
+                image = image.resize(new_size, Image.Resampling.LANCZOS)
+                
         return image
         
-    except Exception as e:
-        logger.error(f"Error preprocessing image {image_path}: {str(e)}")
+    except FileNotFoundError:
         raise
+    except Exception as e:
+        raise ValueError(f"Error processing image {image_path}: {str(e)}")
 
 def load_model_weights(
     model: torch.nn.Module,
