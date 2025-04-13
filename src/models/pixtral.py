@@ -73,10 +73,11 @@ class PixtralModel:
         try:
             logger.info(f"Loading Pixtral model with {self.quantization}-bit quantization")
             
-            # Load processor
+            # Load processor with fast processing enabled
             self.processor = AutoProcessor.from_pretrained(
                 str(self.model_path),
-                trust_remote_code=True
+                trust_remote_code=True,
+                use_fast=True  # Enable fast processing
             )
             
             # Load model with quantization
@@ -85,28 +86,32 @@ class PixtralModel:
                     str(self.model_path),
                     torch_dtype=torch.float32,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 16:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float16,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 8:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_8bit=True,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 4:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_4bit=True,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
