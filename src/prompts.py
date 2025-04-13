@@ -46,10 +46,17 @@ def load_prompt_template(prompt_strategy: str, prompts_dir: Optional[Path] = Non
             template_data = yaml.safe_load(f)
             
         # Validate template structure
-        if 'template' not in template_data:
-            raise ValueError(f"Invalid prompt template: missing 'template' field in {prompt_path}")
+        if 'prompts' not in template_data:
+            raise ValueError(f"Invalid prompt template: missing 'prompts' array in {prompt_path}")
             
-        return template_data['template']
+        # Find the matching prompt
+        for prompt in template_data['prompts']:
+            if prompt['name'] == prompt_strategy:
+                if 'text' not in prompt:
+                    raise ValueError(f"Invalid prompt template: missing 'text' field in prompt {prompt_strategy}")
+                return prompt['text']
+                
+        raise ValueError(f"Prompt strategy {prompt_strategy} not found in {prompt_path}")
         
     except yaml.YAMLError as e:
         logger.error(f"Error parsing prompt template {prompt_strategy}: {str(e)}")
