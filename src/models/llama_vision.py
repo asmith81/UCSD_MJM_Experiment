@@ -194,8 +194,14 @@ class LlamaVisionModel:
                     max_new_tokens=50,
                     num_return_sequences=1,
                     temperature=0.7,
-                    do_sample=True  # Enable sampling since we're using temperature
+                    do_sample=True,  # Enable sampling since we're using temperature
+                    pad_token_id=self.processor.tokenizer.pad_token_id,
+                    eos_token_id=self.processor.tokenizer.eos_token_id
                 )
+                
+            # Ensure outputs are in the correct format
+            if isinstance(outputs, torch.Tensor):
+                outputs = outputs.unsqueeze(0) if outputs.dim() == 1 else outputs
                 
             # Decode output
             output_text = self.processor.decode(outputs[0], skip_special_tokens=True)
