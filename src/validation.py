@@ -49,8 +49,10 @@ def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
                 # If no valid output found, set a default empty string
                 result['model_response']['output'] = ""
                 
+        # Add default processing time if missing
         if 'processing_time' not in result['model_response']:
-            raise ValueError("Missing processing time in model response")
+            result['model_response']['processing_time'] = 0.0
+            logger.warning("Processing time not provided, using default value of 0.0")
             
         # Validate evaluation
         if 'work_order_number' not in result['evaluation']:
