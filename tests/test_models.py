@@ -10,7 +10,7 @@ import json
 from PIL import Image
 
 @pytest.mark.skipif(
-    "environment == 'local'",
+    lambda environment: environment == 'local',
     reason="Model loading tests require GPU environment"
 )
 def test_model_loading(project_root: Path, test_config: Dict[str, Any], environment: str):
@@ -50,7 +50,7 @@ def test_mock_inference(mock_model, test_config: Dict[str, Any]):
     assert result["processing_time"] > 0
 
 @pytest.mark.skipif(
-    "environment == 'local'",
+    lambda environment: environment == 'local',
     reason="Full model inference tests require GPU environment"
 )
 def test_full_model_inference(project_root: Path, test_config: Dict[str, Any], environment: str):
