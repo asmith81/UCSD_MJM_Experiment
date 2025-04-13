@@ -21,6 +21,7 @@ import os
 import sys
 from pathlib import Path
 import logging
+import subprocess
 
 # Determine root directory
 ROOT_DIR = Path(__file__).parent.parent
@@ -30,7 +31,7 @@ sys.path.append(str(ROOT_DIR))
 import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.llama_vision import load_model, process_image, load_prompt_template, validate_results
+from src.models.llama_vision import load_model, process_image, load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 from src.validation import validate_results
 
@@ -166,4 +167,20 @@ if 'results' in locals():
         print(f"\n{quant_level}-bit Quantization:")
         print(f"Work Order Accuracy: {metric['work_order_accuracy']:.2%}")
         print(f"Total Cost Accuracy: {metric['total_cost_accuracy']:.2%}")
-        print(f"Average Processing Time: {metric['avg_processing_time']:.2f}s") 
+        print(f"Average Processing Time: {metric['avg_processing_time']:.2f}s")
+
+# %% [markdown]
+# ## PyTorch Dependencies
+# 
+# Install PyTorch dependencies separately
+
+# %%
+print("Installing PyTorch dependencies...")
+subprocess.check_call([
+    sys.executable, "-m", "pip", "install",
+    "torch==2.1.0",
+    "torchvision==0.16.0",
+    "torchaudio==2.1.0",
+    "--index-url", "https://download.pytorch.org/whl/cu118"
+])
+print("PyTorch dependencies installed successfully.") 

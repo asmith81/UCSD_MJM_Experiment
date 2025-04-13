@@ -64,9 +64,9 @@ except subprocess.CalledProcessError as e:
 from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.pixtral import load_model, process_image_wrapper, validate_results
-from src.prompts import load_prompt_template
+from src.models.pixtral import load_model, process_image, load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
+from src.validation import validate_results
 
 # Setup environment
 try:
@@ -150,7 +150,7 @@ def main():
             model_name=MODEL_NAME,
             test_matrix_path=TEST_MATRIX_PATH,
             model_loader=load_model,
-            processor=process_image_wrapper,
+            processor=process_image,
             prompt_loader=load_prompt_template,
             result_validator=validate_results
         )
