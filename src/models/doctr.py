@@ -84,14 +84,16 @@ class DoctrModel:
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
-                    device=self.device
+                    device=self.device,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 16:
                 self.model = ocr_predictor(
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
-                    device=self.device
+                    device=self.device,
+                    low_cpu_mem_usage=True
                 )
                 self.model = self.model.half()
             elif self.quantization == 8:
@@ -99,7 +101,8 @@ class DoctrModel:
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
-                    device=self.device
+                    device=self.device,
+                    low_cpu_mem_usage=True
                 )
                 self.model = torch.quantization.quantize_dynamic(
                     self.model,
@@ -111,7 +114,8 @@ class DoctrModel:
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
-                    device=self.device
+                    device=self.device,
+                    low_cpu_mem_usage=True
                 )
                 self.model = torch.quantization.quantize_dynamic(
                     self.model,

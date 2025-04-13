@@ -79,10 +79,11 @@ class LlamaVisionModel:
             if missing_files:
                 raise FileNotFoundError(f"Missing required model files: {missing_files}")
             
-            # Load processor
+            # Load processor with fast processing enabled
             self.processor = MllamaProcessor.from_pretrained(
                 str(self.model_path),
-                trust_remote_code=True
+                trust_remote_code=True,
+                use_fast=True  # Enable fast processing
             )
             
             # Load model with quantization
@@ -91,28 +92,32 @@ class LlamaVisionModel:
                     str(self.model_path),
                     torch_dtype=torch.float32,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 16:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float16,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 8:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_8bit=True,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             elif self.quantization == 4:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_4bit=True,
                     device_map=self.device,
-                    trust_remote_code=True
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
