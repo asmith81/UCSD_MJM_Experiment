@@ -8,7 +8,7 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import MllamaForConditionalGeneration, MllamaProcessor
+from transformers import MllamaForConditionalGeneration, MllamaProcessor, BitsAndBytesConfig
 from PIL import Image
 import logging
 from pathlib import Path
@@ -91,7 +91,7 @@ class LlamaVisionModel:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float32,
-                    device_map=self.device,
+                    device_map="auto",
                     trust_remote_code=True,
                     low_cpu_mem_usage=True
                 )
@@ -99,25 +99,36 @@ class LlamaVisionModel:
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float16,
-                    device_map=self.device,
+                    device_map="auto",
                     trust_remote_code=True,
                     low_cpu_mem_usage=True
                 )
             elif self.quantization == 8:
+                quantization_config = BitsAndBytesConfig(
+                    load_in_8bit=True,
+                    bnb_8bit_compute_dtype=torch.float16,
+                    bnb_8bit_use_double_quant=True
+                )
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    load_in_8bit=True,
-                    device_map=self.device,
+                    device_map="auto",
                     trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             elif self.quantization == 4:
+                quantization_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4"
+                )
                 self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
-                    load_in_4bit=True,
-                    device_map=self.device,
+                    device_map="auto",
                     trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")

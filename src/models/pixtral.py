@@ -8,11 +8,12 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import LlavaForConditionalGeneration, AutoTokenizer, AutoProcessor
+from transformers import LlavaForConditionalGeneration, AutoTokenizer, AutoProcessor, AutoModelForVision2Seq
 from PIL import Image
 import logging
 from pathlib import Path
 import time
+from transformers import BitsAndBytesConfig
 
 from .common import (
     preprocess_image,
@@ -73,45 +74,56 @@ class PixtralModel:
         try:
             logger.info(f"Loading Pixtral model with {self.quantization}-bit quantization")
             
-            # Load processor with fast processing enabled
+            # Validate model directory structure
+            required_files = ['config.json', 'pytorch_model.bin']
+            missing_files = [f for f in required_files if not (self.model_path / f).exists()]
+            if missing_files:
+                raise FileNotFoundError(f"Missing required model files: {missing_files}")
+            
+            # Load processor
             self.processor = AutoProcessor.from_pretrained(
-                str(self.model_path),
-                trust_remote_code=True,
-                use_fast=True  # Enable fast processing
+                self.model_path,
+                use_fast=True
             )
             
             # Load model with quantization
             if self.quantization == 32:
-                self.model = LlavaForConditionalGeneration.from_pretrained(
-                    str(self.model_path),
-                    torch_dtype=torch.float32,
-                    device_map=self.device,
-                    trust_remote_code=True,
+                self.model = AutoModelForVision2Seq.from_pretrained(
+                    self.model_path,
+                    device_map="auto",
                     low_cpu_mem_usage=True
                 )
             elif self.quantization == 16:
-                self.model = LlavaForConditionalGeneration.from_pretrained(
-                    str(self.model_path),
-                    torch_dtype=torch.float16,
-                    device_map=self.device,
-                    trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                self.model = AutoModelForVision2Seq.from_pretrained(
+                    self.model_path,
+                    device_map="auto",
+                    low_cpu_mem_usage=True,
+                    torch_dtype=torch.float16
                 )
             elif self.quantization == 8:
-                self.model = LlavaForConditionalGeneration.from_pretrained(
-                    str(self.model_path),
+                quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
-                    device_map=self.device,
-                    trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    bnb_8bit_compute_dtype=torch.float16,
+                    bnb_8bit_use_double_quant=True
+                )
+                self.model = AutoModelForVision2Seq.from_pretrained(
+                    self.model_path,
+                    device_map="auto",
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             elif self.quantization == 4:
-                self.model = LlavaForConditionalGeneration.from_pretrained(
-                    str(self.model_path),
+                quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
-                    device_map=self.device,
-                    trust_remote_code=True,
-                    low_cpu_mem_usage=True
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4"
+                )
+                self.model = AutoModelForVision2Seq.from_pretrained(
+                    self.model_path,
+                    device_map="auto",
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")

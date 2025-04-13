@@ -13,6 +13,7 @@ from PIL import Image
 import logging
 from pathlib import Path
 import time
+from transformers import BitsAndBytesConfig
 
 from .common import (
     preprocess_image,
@@ -97,30 +98,33 @@ class DoctrModel:
                 )
                 self.model = self.model.half()
             elif self.quantization == 8:
+                quantization_config = BitsAndBytesConfig(
+                    load_in_8bit=True,
+                    bnb_8bit_compute_dtype=torch.float16,
+                    bnb_8bit_use_double_quant=True
+                )
                 self.model = ocr_predictor(
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
                     device=self.device,
-                    low_cpu_mem_usage=True
-                )
-                self.model = torch.quantization.quantize_dynamic(
-                    self.model,
-                    {torch.nn.Linear},
-                    dtype=torch.qint8
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             elif self.quantization == 4:
+                quantization_config = BitsAndBytesConfig(
+                    load_in_4bit=True,
+                    bnb_4bit_compute_dtype=torch.float16,
+                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_quant_type="nf4"
+                )
                 self.model = ocr_predictor(
                     det_arch='db_resnet50',
                     reco_arch='crnn_vgg16_bn',
                     pretrained=True,
                     device=self.device,
-                    low_cpu_mem_usage=True
-                )
-                self.model = torch.quantization.quantize_dynamic(
-                    self.model,
-                    {torch.nn.Linear},
-                    dtype=torch.qint4
+                    low_cpu_mem_usage=True,
+                    quantization_config=quantization_config
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
