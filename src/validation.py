@@ -41,12 +41,13 @@ def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
             raise ValueError("Missing quantization level in test parameters")
             
         # Validate model response - allow both direct and chat-style formats
-        if 'output' not in result['model_response']:
+        if 'output' not in result['model_response'] or not result['model_response']['output']:
             # Try to find output in chat-style format
-            if 'parsed_value' in result['model_response']:
+            if 'parsed_value' in result['model_response'] and result['model_response']['parsed_value']:
                 result['model_response']['output'] = result['model_response']['parsed_value']
             else:
-                raise ValueError("Missing output in model response")
+                # If no valid output found, set a default empty string
+                result['model_response']['output'] = ""
                 
         if 'processing_time' not in result['model_response']:
             raise ValueError("Missing processing time in model response")

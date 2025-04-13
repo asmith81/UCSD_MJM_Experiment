@@ -208,8 +208,16 @@ class PixtralModel:
                 clean_up_tokenization_spaces=False
             )[0]
             
+            # Ensure output is not None or empty
+            if not output_text:
+                output_text = ""
+                
+            logger.debug(f"Raw model output: {output_text}")
+            
             # Parse output
             parsed_value = parse_model_output(output_text, field_type)
+            
+            logger.debug(f"Parsed value: {parsed_value}")
             
             # Calculate processing time
             processing_time = time.time() - start_time
@@ -222,7 +230,6 @@ class PixtralModel:
                 },
                 'model_response': {
                     'output': output_text,
-                    'parsed_value': parsed_value,
                     'processing_time': processing_time
                 },
                 'evaluation': {
@@ -240,6 +247,8 @@ class PixtralModel:
                     }
                 }
             }
+            
+            logger.debug(f"Result structure: {result}")
             
             return result
             
