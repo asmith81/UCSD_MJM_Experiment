@@ -117,8 +117,19 @@ except Exception as e:
 
 # Load model configuration
 try:
-    model_config = config['model']
-    prompt_config = config['prompts']
+    # The config is already loaded and validated with required sections
+    # We can use the config directly as it matches our needs
+    model_config = {
+        'name': config['name'],
+        'path': config['repo_id'],
+        'quantization_levels': list(config['quantization']['options'].keys())
+    }
+    
+    prompt_config = {
+        'format': config['prompt']['format'],
+        'image_placeholder': config['prompt']['image_placeholder'],
+        'default_field': config['prompt']['default_field']
+    }
     
     # Validate model configuration
     required_model_fields = ['name', 'path', 'quantization_levels']
