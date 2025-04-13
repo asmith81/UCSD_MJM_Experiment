@@ -258,7 +258,8 @@ def main():
                 prompt_strategy=strategy,
                 prompts_dir=ROOT_DIR / "config" / "prompts"
             ),
-            result_validator=validate_results
+            result_validator=validate_results,
+            project_root=ROOT_DIR
         )
         
         # Log results

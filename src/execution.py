@@ -78,7 +78,8 @@ def run_test_suite(
     model_loader: Optional[ModelLoader] = None,
     processor: Optional[ModelProcessor] = None,
     prompt_loader: Optional[Callable[[str], str]] = None,
-    result_validator: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None
+    result_validator: Optional[Callable[[Dict[str, Any]], Dict[str, Any]]] = None,
+    project_root: Optional[Path] = None
 ) -> List[Dict[str, Any]]:
     """
     Run the test suite for a specific model.
@@ -90,6 +91,7 @@ def run_test_suite(
         processor: Optional function to process images
         prompt_loader: Optional function to load prompt templates
         result_validator: Optional function to validate results
+        project_root: Optional path to project root directory
         
     Returns:
         List of test results
@@ -127,6 +129,11 @@ def run_test_suite(
                 try:
                     # Load prompt template
                     prompt_template = prompt_loader(case['prompt_type'])
+                    
+                    # Convert relative image path to absolute if project_root is provided
+                    image_path = case['image_path']
+                    if project_root is not None:
+                        image_path = str(project_root / image_path)
                     
                     # Run inference
                     result = processor(model, prompt_template, case)
