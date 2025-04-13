@@ -8,7 +8,7 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
 from PIL import Image
 import logging
 from pathlib import Path
@@ -44,21 +44,37 @@ class PixtralModel:
             model_path: Path to model weights
             quantization: Bit width for quantization (4, 8, 16, 32)
             device: Device to run model on
+            
+        Raises:
+            FileNotFoundError: If model path doesn't exist
+            ValueError: If quantization level is invalid
         """
+        # Validate model path
         self.model_path = Path(model_path)
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"Model path does not exist: {model_path}")
+            
+        # Validate quantization
+        if quantization not in [4, 8, 16, 32]:
+            raise ValueError(f"Invalid quantization level: {quantization}. Must be one of [4, 8, 16, 32]")
+            
         self.quantization = quantization
         self.device = device
         self.model = None
-        self.tokenizer = None
+        self.processor = None
         self._load_model()
         
     def _load_model(self) -> None:
-        """Load model with specified quantization."""
+        """Load model with specified quantization.
+        
+        Raises:
+            RuntimeError: If model loading fails
+        """
         try:
             logger.info(f"Loading Pixtral model with {self.quantization}-bit quantization")
             
-            # Load tokenizer
-            self.tokenizer = AutoTokenizer.from_pretrained(
+            # Load processor
+            self.processor = AutoProcessor.from_pretrained(
                 str(self.model_path),
                 trust_remote_code=True
             )
@@ -99,7 +115,7 @@ class PixtralModel:
             
         except Exception as e:
             logger.error(f"Error loading Pixtral model: {str(e)}")
-            raise
+            raise RuntimeError(f"Failed to load Pixtral model: {str(e)}")
             
     def process_image(
         self,
@@ -128,15 +144,12 @@ class PixtralModel:
             # Preprocess image
             image = preprocess_image(Path(image_path), config)
             
-            # Prepare model inputs
-            inputs = self.tokenizer(
-                prompt,
-                return_tensors="pt",
-                padding=True
+            # Prepare inputs using processor
+            inputs = self.processor(
+                text=prompt,
+                images=image,
+                return_tensors="pt"
             ).to(self.device)
-            
-            # Add image to inputs
-            inputs["pixel_values"] = image
             
             # Run inference
             with torch.no_grad():
@@ -148,75 +161,50 @@ class PixtralModel:
                 )
                 
             # Decode output
-            output_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            output_text = self.processor.batch_decode(
+                outputs,
+                skip_special_tokens=True,
+                clean_up_tokenization_spaces=False
+            )[0]
             
             # Parse output
-            parsed_output = parse_model_output(output_text, field_type)
+            parsed_value = parse_model_output(output_text, field_type)
             
-            # Validate output
-            if not validate_model_output(parsed_output, field_type):
-                raise ValueError("Invalid model output")
-                
-            # Create response
-            response: ModelResponse = {
-                "output": parsed_output,
-                "error": None,
-                "processing_time": time.time() - start_time
-            }
+            # Calculate processing time
+            processing_time = time.time() - start_time
             
-            # Return full result structure
-            return {
-                "test_parameters": {
-                    "model": "pixtral",
-                    "quantization": self.quantization,
-                    "prompt_strategy": prompt
+            # Structure result according to validation requirements
+            result = {
+                'test_parameters': {
+                    'model': 'pixtral',
+                    'quantization': self.quantization
                 },
-                "model_response": response,
-                "evaluation": {
-                    "work_order_number": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": None
+                'model_response': {
+                    'output': output_text,
+                    'parsed_value': parsed_value,
+                    'processing_time': processing_time
+                },
+                'evaluation': {
+                    'work_order_number': {
+                        'raw_string_match': False,
+                        'normalized_match': False,
+                        'cer': 0.0,
+                        'error_category': 'not_evaluated'
                     },
-                    "total_cost": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": None
+                    'total_cost': {
+                        'raw_string_match': False,
+                        'normalized_match': False,
+                        'cer': 0.0,
+                        'error_category': 'not_evaluated'
                     }
                 }
             }
+            
+            return result
             
         except Exception as e:
-            logger.error(f"Error processing image {image_path}: {str(e)}")
-            response: ModelResponse = {
-                "output": {
-                    "raw_text": "",
-                    "parsed_value": None,
-                    "normalized_value": None
-                },
-                "error": str(e),
-                "processing_time": time.time() - start_time
-            }
-            return {
-                "test_parameters": {
-                    "model": "pixtral",
-                    "quantization": self.quantization,
-                    "prompt_strategy": prompt
-                },
-                "model_response": response,
-                "evaluation": {
-                    "work_order_number": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": str(e)
-                    },
-                    "total_cost": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": str(e)
-                    }
-                }
-            }
+            logger.error(f"Error processing image: {str(e)}")
+            raise
 
 # Protocol-compatible wrapper functions
 def load_model(model_name: str, quantization: int) -> PixtralModel:

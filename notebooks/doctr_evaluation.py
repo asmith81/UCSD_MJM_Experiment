@@ -22,6 +22,14 @@ import sys
 import subprocess
 from pathlib import Path
 import logging
+import json
+
+# Configure logging first
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Determine root directory
 try:
@@ -57,41 +65,39 @@ try:
     ])
     print("PyTorch dependencies installed successfully.")
 except subprocess.CalledProcessError as e:
-    print(f"Error installing dependencies: {e}")
+    logger.error(f"Error installing dependencies: {e}")
     raise
 
 # Import project modules
 from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.doctr import load_model, process_image, load_prompt_template
+from src.models.doctr import load_model, process_image
+from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 from src.validation import validate_results
+from src.data_utils import DataConfig
 
 # Setup environment
 try:
-    env = setup_environment()
-    paths = env['paths']
+    env = setup_environment(
+        project_root=ROOT_DIR,
+        requirements_path=ROOT_DIR / "requirements.txt"
+    )
     
     # Validate paths
-    required_paths = ['logs', 'models', 'data']
-    missing_paths = [path for path in required_paths if path not in paths]
+    required_paths = ['data_dir', 'models_dir', 'logs_dir', 'results_dir', 'prompts_dir']
+    missing_paths = [path for path in required_paths if path not in env]
     if missing_paths:
         raise RuntimeError(f"Missing required paths in environment: {missing_paths}")
         
-    # Ensure log directory exists
-    paths['logs'].mkdir(parents=True, exist_ok=True)
+    # Ensure required directories exist
+    for path in required_paths:
+        env[path].mkdir(parents=True, exist_ok=True)
     
 except Exception as e:
     logger.error(f"Error setting up environment: {str(e)}")
     raise
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 # Load configuration
 config_path = ROOT_DIR / "config" / "doctr.yaml"
@@ -100,6 +106,11 @@ if not config_path.exists():
 
 try:
     config = load_yaml_config(str(config_path))
+    # Validate required configuration sections
+    required_sections = ['model', 'prompts']
+    missing_sections = [section for section in required_sections if section not in config]
+    if missing_sections:
+        raise ValueError(f"Configuration missing required sections: {missing_sections}")
 except Exception as e:
     logger.error(f"Error loading configuration: {str(e)}")
     raise
@@ -113,18 +124,55 @@ except Exception as e:
 # Set model for this notebook
 MODEL_NAME = "doctr"
 TEST_MATRIX_PATH = str(ROOT_DIR / "config" / "test_matrix.json")
-EXECUTION_LOG_PATH = paths['logs'] / f"{MODEL_NAME}_execution.log"
+EXECUTION_LOG_PATH = env['logs_dir'] / f"{MODEL_NAME}_execution.log"
 
-# Validate test matrix exists
-if not Path(TEST_MATRIX_PATH).exists():
-    raise FileNotFoundError(f"Test matrix file not found: {TEST_MATRIX_PATH}")
+# Validate test matrix exists and is valid
+try:
+    if not Path(TEST_MATRIX_PATH).exists():
+        raise FileNotFoundError(f"Test matrix file not found: {TEST_MATRIX_PATH}")
+        
+    # Load and validate test matrix
+    with open(TEST_MATRIX_PATH, 'r') as f:
+        test_matrix = json.load(f)
+        
+    # Validate test matrix structure
+    if 'test_cases' not in test_matrix:
+        raise ValueError("Test matrix must contain 'test_cases' array")
+        
+    # Validate required fields
+    required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level', 'image_path']
+    for test_case in test_matrix['test_cases']:
+        missing_fields = [field for field in required_fields if field not in test_case]
+        if missing_fields:
+            raise ValueError(f"Test case missing required fields: {missing_fields}")
+            
+    # Validate quantization values
+    valid_quantization = [4, 8, 16, 32]
+    invalid_quantization = [case['quant_level'] for case in test_matrix['test_cases'] 
+                          if case['quant_level'] not in valid_quantization]
+    if invalid_quantization:
+        raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
+            
+except Exception as e:
+    logger.error(f"Error validating test matrix: {str(e)}")
+    raise
 
 # Load model configuration
 try:
     model_config = config['model']
     prompt_config = config['prompts']
+    
+    # Validate model configuration
+    required_model_fields = ['name', 'path', 'quantization_levels']
+    missing_fields = [field for field in required_model_fields if field not in model_config]
+    if missing_fields:
+        raise ValueError(f"Model configuration missing required fields: {missing_fields}")
+        
 except KeyError as e:
     logger.error(f"Missing required configuration section: {e}")
+    raise
+except Exception as e:
+    logger.error(f"Error loading model configuration: {str(e)}")
     raise
 
 # %% [markdown]
@@ -229,10 +277,10 @@ def analyze_results(results: list) -> dict:
                                if r['evaluation']['total_cost']['normalized_match'])
         
         metrics[quant_level] = {
-            'work_order_accuracy': correct_work_order / total_tests,
-            'total_cost_accuracy': correct_total_cost / total_tests,
+            'work_order_accuracy': correct_work_order / total_tests if total_tests > 0 else 0,
+            'total_cost_accuracy': correct_total_cost / total_tests if total_tests > 0 else 0,
             'avg_processing_time': sum(r['model_response']['processing_time'] 
-                                    for r in quant_results) / total_tests
+                                    for r in quant_results) / total_tests if total_tests > 0 else 0
         }
     
     return metrics

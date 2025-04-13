@@ -44,17 +44,39 @@ class DoctrModel:
             model_path: Path to model weights
             quantization: Bit width for quantization (4, 8, 16, 32)
             device: Device to run model on
+            
+        Raises:
+            FileNotFoundError: If model path doesn't exist
+            ValueError: If quantization level is invalid
         """
+        # Validate model path
         self.model_path = Path(model_path)
+        if not self.model_path.exists():
+            raise FileNotFoundError(f"Model path does not exist: {model_path}")
+            
+        # Validate quantization
+        if quantization not in [4, 8, 16, 32]:
+            raise ValueError(f"Invalid quantization level: {quantization}. Must be one of [4, 8, 16, 32]")
+            
         self.quantization = quantization
         self.device = device
         self.model = None
         self._load_model()
         
     def _load_model(self) -> None:
-        """Load model with specified quantization."""
+        """Load model with specified quantization.
+        
+        Raises:
+            RuntimeError: If model loading fails
+        """
         try:
             logger.info(f"Loading Doctr model with {self.quantization}-bit quantization")
+            
+            # Validate model directory structure
+            required_files = ['config.json', 'pytorch_model.bin']
+            missing_files = [f for f in required_files if not (self.model_path / f).exists()]
+            if missing_files:
+                raise FileNotFoundError(f"Missing required model files: {missing_files}")
             
             # Load model with quantization
             if self.quantization == 32:
@@ -71,7 +93,7 @@ class DoctrModel:
                     pretrained=True,
                     device=self.device
                 )
-                self.model = self.model.half()  # Convert to float16
+                self.model = self.model.half()
             elif self.quantization == 8:
                 self.model = ocr_predictor(
                     det_arch='db_resnet50',
@@ -79,14 +101,23 @@ class DoctrModel:
                     pretrained=True,
                     device=self.device
                 )
-                # Apply 8-bit quantization
                 self.model = torch.quantization.quantize_dynamic(
                     self.model,
                     {torch.nn.Linear},
                     dtype=torch.qint8
                 )
             elif self.quantization == 4:
-                raise ValueError("4-bit quantization not supported for Doctr model")
+                self.model = ocr_predictor(
+                    det_arch='db_resnet50',
+                    reco_arch='crnn_vgg16_bn',
+                    pretrained=True,
+                    device=self.device
+                )
+                self.model = torch.quantization.quantize_dynamic(
+                    self.model,
+                    {torch.nn.Linear},
+                    dtype=torch.qint4
+                )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
                 
@@ -94,7 +125,7 @@ class DoctrModel:
             
         except Exception as e:
             logger.error(f"Error loading Doctr model: {str(e)}")
-            raise
+            raise RuntimeError(f"Failed to load Doctr model: {str(e)}")
             
     def process_image(
         self,
@@ -107,7 +138,7 @@ class DoctrModel:
         
         Args:
             image_path: Path to input image
-            prompt: Prompt template for extraction (not used for Doctr)
+            prompt: Prompt template for extraction
             field_type: Type of field to extract
             config: Data configuration
             
@@ -125,82 +156,49 @@ class DoctrModel:
             
             # Run inference
             with torch.no_grad():
-                result = self.model([image])
+                doc = self.model([image])
                 
-            # Extract text from result
-            output_text = ""
-            for page in result.pages:
-                for block in page.blocks:
-                    for line in block.lines:
-                        output_text += line.value + " "
+            # Extract text
+            output_text = " ".join([word for page in doc.pages for word in page.words])
             
             # Parse output
-            parsed_output = parse_model_output(output_text, field_type)
+            parsed_value = parse_model_output(output_text, field_type)
             
-            # Validate output
-            if not validate_model_output(parsed_output, field_type):
-                raise ValueError("Invalid model output")
-                
-            # Create response
-            response: ModelResponse = {
-                "output": parsed_output,
-                "error": None,
-                "processing_time": time.time() - start_time
-            }
+            # Calculate processing time
+            processing_time = time.time() - start_time
             
-            # Return full result structure
-            return {
-                "test_parameters": {
-                    "model": "doctr",
-                    "quantization": self.quantization,
-                    "prompt_strategy": prompt
+            # Structure result according to validation requirements
+            result = {
+                'test_parameters': {
+                    'model': 'doctr',
+                    'quantization': self.quantization
                 },
-                "model_response": response,
-                "evaluation": {
-                    "work_order_number": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": None
+                'model_response': {
+                    'output': output_text,
+                    'parsed_value': parsed_value,
+                    'processing_time': processing_time
+                },
+                'evaluation': {
+                    'work_order_number': {
+                        'raw_string_match': False,
+                        'normalized_match': False,
+                        'cer': 0.0,
+                        'error_category': 'not_evaluated'
                     },
-                    "total_cost": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": None
+                    'total_cost': {
+                        'raw_string_match': False,
+                        'normalized_match': False,
+                        'cer': 0.0,
+                        'error_category': 'not_evaluated'
                     }
                 }
             }
+            
+            return result
             
         except Exception as e:
-            logger.error(f"Error processing image {image_path}: {str(e)}")
-            response: ModelResponse = {
-                "output": {
-                    "raw_text": "",
-                    "parsed_value": None,
-                    "normalized_value": None
-                },
-                "error": str(e),
-                "processing_time": time.time() - start_time
-            }
-            return {
-                "test_parameters": {
-                    "model": "doctr",
-                    "quantization": self.quantization,
-                    "prompt_strategy": prompt
-                },
-                "model_response": response,
-                "evaluation": {
-                    "work_order_number": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": str(e)
-                    },
-                    "total_cost": {
-                        "normalized_match": False,
-                        "cer": 0.0,
-                        "error_category": str(e)
-                    }
-                }
-            }
+            logger.error(f"Error processing image: {str(e)}")
+            raise
 
 # Protocol-compatible wrapper functions
 def load_model(model_name: str, quantization: int) -> DoctrModel:
