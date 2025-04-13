@@ -59,4 +59,4 @@ myst-parser==2.0.0
 # - Minimum GPU memory: 93.00 GB
 # - Python version: 3.11
 
-bitsandbytes>=0.42.0
+bitsandbytes==0.45.5
