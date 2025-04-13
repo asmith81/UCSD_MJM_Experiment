@@ -342,6 +342,7 @@ def process_image_wrapper(
     Returns:
         Dictionary with test parameters and model response
     """
+    # Get model response
     response = model.process_image(
         image_path=image_path,
         prompt=prompt_template,
@@ -349,23 +350,7 @@ def process_image_wrapper(
         config=config
     )
     
-    return {
-        "test_parameters": {
-            "model": "doctr",
-            "quantization": model.quantization,
-            "prompt_strategy": prompt_template
-        },
-        "model_response": response,
-        "evaluation": {
-            "work_order_number": {
-                "normalized_match": False,
-                "cer": 0.0,
-                "error_category": None
-            },
-            "total_cost": {
-                "normalized_match": False,
-                "cer": 0.0,
-                "error_category": None
-            }
-        }
-    } 
+    # Update test parameters with prompt strategy
+    response['test_parameters']['prompt_strategy'] = prompt_template
+    
+    return response 
