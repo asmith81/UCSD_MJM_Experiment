@@ -24,13 +24,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def preprocess_image(
-    image_path: Path,
+    image_path: Union[str, Path],
     config: DataConfig
 ) -> Image.Image:
     """Preprocess image for model input.
     
     Args:
-        image_path: Path to the image file
+        image_path: Path to the image file (can be relative or absolute)
         config: Data configuration with preprocessing settings
         
     Returns:
@@ -41,6 +41,12 @@ def preprocess_image(
         ValueError: If image processing fails
     """
     try:
+        # Convert to Path and ensure absolute path
+        image_path = Path(image_path)
+        if not image_path.is_absolute():
+            # If path is relative, join with image_dir from config
+            image_path = config['image_dir'] / image_path
+            
         # Load image
         if not image_path.exists():
             raise FileNotFoundError(f"Image file not found: {image_path}")

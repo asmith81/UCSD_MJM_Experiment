@@ -232,9 +232,12 @@ def main():
         
         # Create data config
         data_config = DataConfig(
-            data_dir=env['data_dir'],
-            models_dir=env['models_dir'],
-            results_dir=env['results_dir']
+            image_dir=env['data_dir'] / 'images',
+            ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
+            image_extensions=['.jpg', '.jpeg', '.png'],
+            max_image_size=1120,
+            supported_formats=['RGB', 'L'],
+            image_processor=None
         )
         
         # Run test suite
