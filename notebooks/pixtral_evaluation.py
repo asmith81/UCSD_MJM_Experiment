@@ -72,7 +72,7 @@ except subprocess.CalledProcessError as e:
 from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.pixtral import load_model, process_image
+from src.models.pixtral import load_model, process_image_wrapper
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 from src.validation import validate_results
@@ -100,14 +100,14 @@ except Exception as e:
     raise
 
 # Load configuration
-config_path = ROOT_DIR / "config" / "pixtral.yaml"
+config_path = ROOT_DIR / "config" / "models" / "pixtral.yaml"
 if not config_path.exists():
     raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
 try:
     config = load_yaml_config(str(config_path))
     # Validate required configuration sections
-    required_sections = ['model', 'prompts']
+    required_sections = ['name', 'loading', 'quantization', 'prompt', 'inference']
     missing_sections = [section for section in required_sections if section not in config]
     if missing_sections:
         raise ValueError(f"Configuration missing required sections: {missing_sections}")
@@ -207,9 +207,9 @@ def main():
             model_loader=lambda name, quant: load_model(
                 model_name=name,
                 quantization=quant,
-                model_path=env['models_dir'] / model_config['path']
+                model_path=env['models_dir'] / config['name']
             ),
-            processor=lambda model, prompt, test_case: process_image(
+            processor=lambda model, prompt, test_case: process_image_wrapper(
                 model=model,
                 prompt_template=prompt,
                 image_path=test_case['image_path'],
@@ -218,7 +218,7 @@ def main():
             ),
             prompt_loader=lambda strategy: load_prompt_template(
                 prompt_strategy=strategy,
-                prompts_dir=env['prompts_dir']
+                prompts_dir=ROOT_DIR / "config" / "prompts"
             ),
             result_validator=validate_results
         )
