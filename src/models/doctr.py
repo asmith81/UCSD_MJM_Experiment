@@ -186,6 +186,12 @@ class DoctrModel:
                 # Normalize image
                 image_tensor = image_tensor / 255.0
                 
+                # Ensure tensor has batch dimension and is on correct device
+                if image_tensor.dim() == 3:
+                    image_tensor = image_tensor.unsqueeze(0)
+                image_tensor = image_tensor.to(self.device)
+                
+                # Run model inference
                 doc = self.model([image_tensor])
                 
             # Extract text

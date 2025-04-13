@@ -189,6 +189,14 @@ class LlamaVisionModel:
             
             # Run inference
             with torch.no_grad():
+                # Ensure inputs are in the correct format
+                if 'pixel_values' in inputs:
+                    inputs['pixel_values'] = inputs['pixel_values'].to(self.device)
+                if 'input_ids' in inputs:
+                    inputs['input_ids'] = inputs['input_ids'].to(self.device)
+                if 'attention_mask' in inputs:
+                    inputs['attention_mask'] = inputs['attention_mask'].to(self.device)
+                
                 outputs = self.model.generate(
                     **inputs,
                     max_new_tokens=50,
