@@ -1,14 +1,14 @@
 """
-Pixtral Model Evaluation Notebook
+Llama Vision Model Evaluation Notebook
 
-This notebook evaluates the Pixtral-12B model's performance on invoice data extraction.
+This notebook evaluates the Llama Vision model's performance on invoice data extraction.
 It follows the project's notebook handling rules and functional programming approach.
 """
 
 # %% [markdown]
-# # Pixtral Model Evaluation
+# # Llama Vision Model Evaluation
 # 
-# This notebook evaluates the Pixtral-12B model's performance across different quantization levels
+# This notebook evaluates the Llama Vision model's performance across different quantization levels
 # and prompt strategies for invoice data extraction.
 
 # %% [markdown]
@@ -63,7 +63,7 @@ except subprocess.CalledProcessError as e:
 from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
-from src.models.pixtral import load_model, process_image_wrapper, validate_results
+from src.models.llama_vision import load_model, process_image_wrapper, validate_results
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
 
@@ -93,7 +93,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Load configuration
-config_path = ROOT_DIR / "config" / "pixtral.yaml"
+config_path = ROOT_DIR / "config" / "llama_vision.yaml"
 if not config_path.exists():
     raise FileNotFoundError(f"Configuration file not found: {config_path}")
 
@@ -110,7 +110,7 @@ except Exception as e:
 
 # %%
 # Set model for this notebook
-MODEL_NAME = "pixtral"
+MODEL_NAME = "llama_vision"
 TEST_MATRIX_PATH = str(ROOT_DIR / "config" / "test_matrix.json")
 EXECUTION_LOG_PATH = paths['logs'] / f"{MODEL_NAME}_execution.log"
 
@@ -129,7 +129,7 @@ except KeyError as e:
 # %% [markdown]
 # ## Run Test Suite
 # 
-# Execute the test suite for Pixtral model.
+# Execute the test suite for Llama Vision model.
 
 # %%
 def main():
@@ -186,11 +186,11 @@ if __name__ == "__main__":
 # %% [markdown]
 # ## Results Analysis
 # 
-# Analyze and visualize the results for Pixtral model.
+# Analyze and visualize the results for Llama Vision model.
 
 # %%
 def analyze_results(results: list) -> dict:
-    """Analyze test results for Pixtral model."""
+    """Analyze test results for Llama Vision model."""
     if not results:
         logger.warning("No results to analyze")
         return {}

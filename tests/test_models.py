@@ -10,11 +10,11 @@ import json
 from PIL import Image
 
 @pytest.mark.skipif(
-    lambda environment: environment == 'local',
-    reason="Model loading tests require GPU environment"
+    lambda environment: environment != 'local',
+    reason="Model loading tests require local environment"
 )
 def test_model_loading(project_root: Path, test_config: Dict[str, Any], environment: str):
-    """Test model loading in GPU environment."""
+    """Test model loading in local environment."""
     for model_name in ["pixtral", "llama_vision", "doctr"]:
         for quantization in test_config["quantization_levels"]:
             try:
@@ -50,11 +50,11 @@ def test_mock_inference(mock_model, test_config: Dict[str, Any]):
     assert result["processing_time"] > 0
 
 @pytest.mark.skipif(
-    lambda environment: environment == 'local',
-    reason="Full model inference tests require GPU environment"
+    lambda environment: environment != 'local',
+    reason="Full model inference tests require local environment"
 )
 def test_full_model_inference(project_root: Path, test_config: Dict[str, Any], environment: str):
-    """Test full model inference in GPU environment."""
+    """Test full model inference in local environment."""
     model = load_model("pixtral", 32)  # Use full precision for testing
     test_prompt = "Extract the work order number from this invoice."
     
