@@ -24,30 +24,40 @@ class ImageProcessor(Protocol):
     def process_image(self, image: Image.Image, config: 'DataConfig') -> Image.Image:
         ...
 
+class DataConfig:
+    """Configuration for data processing."""
+    
+    def __init__(
+        self,
+        image_dir: Path,
+        ground_truth_csv: Path,
+        image_extensions: List[str],
+        max_image_size: int,
+        supported_formats: List[str],
+        image_processor: Optional[ImageProcessor] = None
+    ):
+        self.image_dir = image_dir
+        self.ground_truth_csv = ground_truth_csv
+        self.image_extensions = image_extensions
+        self.max_image_size = max_image_size
+        self.supported_formats = supported_formats
+        self.image_processor = image_processor
+
 class DefaultImageProcessor:
     """Default image processing implementation."""
-    def process_image(self, image: Image.Image, config: 'DataConfig') -> Image.Image:
+    def process_image(self, image: Image.Image, config: DataConfig) -> Image.Image:
         """Process image according to configuration."""
         # Convert format if needed
-        if image.mode not in config['supported_formats']:
+        if image.mode not in config.supported_formats:
             image = image.convert('RGB')
             
         # Resize if needed
-        if max(image.size) > config['max_image_size']:
-            ratio = config['max_image_size'] / max(image.size)
+        if max(image.size) > config.max_image_size:
+            ratio = config.max_image_size / max(image.size)
             new_size = tuple(int(dim * ratio) for dim in image.size)
             image = image.resize(new_size, Image.Resampling.LANCZOS)
             
         return image
-
-class DataConfig(TypedDict):
-    """Configuration for data management."""
-    image_dir: Path
-    ground_truth_csv: Path
-    image_extensions: List[str]
-    max_image_size: int
-    supported_formats: List[str]
-    image_processor: Optional[ImageProcessor]
 
 class ImageData(TypedDict):
     """Structure for image data."""
