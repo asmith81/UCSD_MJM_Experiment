@@ -50,8 +50,9 @@ try:
     print("Installing PyTorch dependencies...")
     subprocess.check_call([
         sys.executable, "-m", "pip", "install",
-        "torch==2.2.0",
-        "torchvision==0.17.0",
+        "torch==2.1.0",
+        "torchvision==0.16.0",
+        "torchaudio==2.1.0",
         "--index-url", "https://download.pytorch.org/whl/cu118"
     ])
     print("PyTorch dependencies installed successfully.")
@@ -66,6 +67,7 @@ from src.config import load_yaml_config
 from src.models.doctr import load_model, process_image_wrapper, validate_results
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure
+from src.validation import validate_results
 
 # Setup environment
 try:

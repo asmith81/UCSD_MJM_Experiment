@@ -50,8 +50,9 @@ try:
     print("Installing PyTorch dependencies...")
     subprocess.check_call([
         sys.executable, "-m", "pip", "install",
-        "torch==2.2.0",
-        "torchvision==0.17.0",
+        "torch==2.1.0",
+        "torchvision==0.16.0",
+        "torchaudio==2.1.0",
         "--index-url", "https://download.pytorch.org/whl/cu118"
     ])
     print("PyTorch dependencies installed successfully.")

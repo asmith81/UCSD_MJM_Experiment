@@ -30,6 +30,7 @@ sys.path.append(str(ROOT_DIR))
 import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
+from src.validation import validate_results
 
 # Setup environment
 env = setup_environment()

@@ -1,6 +1,6 @@
 # Core Dependencies
 # PyTorch dependencies installed separately with:
-# pip install torch==2.2.0 torchvision==0.17.0 --index-url https://download.pytorch.org/whl/cu118
+# pip install torch==2.1.0 torchvision==0.16.0 torchaudio==2.1.0 --index-url https://download.pytorch.org/whl/cu118
 transformers==4.50.3
 Pillow==9.3.0
 PyYAML==6.0.1

@@ -32,6 +32,7 @@ from src.environment import setup_environment
 from src.config import load_yaml_config
 from src.models.llama_vision import load_model, process_image, load_prompt_template, validate_results
 from src.results_logging import track_execution, log_result, ResultStructure
+from src.validation import validate_results
 
 # Setup environment
 env = setup_environment()
