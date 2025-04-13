@@ -1,0 +1,76 @@
+{
+    "test_cases": [
+        {
+            "model_name": "pixtral",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "work_order_number",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "total_cost",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8
+        }
+    ]
+} 

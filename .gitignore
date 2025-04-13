@@ -95,8 +95,8 @@ data/external/
 !data/raw/ground-truth-*.csv
 *.xlsx
 *.xls
-*.json
-*.yaml
+# *.json # we need these pushed to run pod
+# *.yaml # we need these pushed to run pod
 *.yml
 *.npy
 *.npz

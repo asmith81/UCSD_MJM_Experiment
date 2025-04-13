@@ -1,0 +1,56 @@
+# Base configuration for LMM Invoice Data Extraction Comparison
+
+# Model configurations
+models:
+  pixtral:
+    config_file: "models/pixtral.yaml"
+    quantization_levels: [4, 8, 16, 32]
+    max_tokens: 512
+    temperature: 0.1
+    
+  llama_vision:
+    config_file: "models/llama_vision.yaml"
+    quantization_levels: [4, 8, 16, 32]
+    max_tokens: 512
+    temperature: 0.1
+    
+  doctr:
+    config_file: "models/doctr.yaml"
+    quantization_levels: [4, 8, 16, 32]
+    max_tokens: 512
+    temperature: 0.1
+
+# Prompt configurations
+prompts:
+  strategies:
+    - basic_extraction
+    - detailed
+    - few_shot
+    - step_by_step
+    - locational
+  default_format: "<s>[INST]Extract the work order number from this invoice image.\n[IMG][/INST]"
+  input_format:
+    image: "RGB"
+    max_resolution: "4032x3024"
+    max_file_size_mb: 10
+
+# Test configuration
+test:
+  batch_size: 1
+  max_retries: 3
+  timeout_seconds: 300
+  performance_thresholds:
+    gpu_utilization: 0.8
+    inference_timeout: 30
+    expected_accuracy: 0.7
+
+# Logging configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  results_dir: "results"
+  performance_metrics:
+    - gpu_utilization
+    - inference_time
+    - accuracy
+    - error_categories 
