@@ -95,11 +95,6 @@ try:
     for path in required_paths:
         env[path].mkdir(parents=True, exist_ok=True)
     
-    # Download model if needed
-    model_path = env['models_dir'] / "pixtral-12b"
-    if not download_model("pixtral", model_path, config['repo_id']):
-        raise RuntimeError("Failed to download model")
-    
 except Exception as e:
     logger.error(f"Error setting up environment: {str(e)}")
     raise
