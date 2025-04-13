@@ -75,7 +75,7 @@ class PixtralModel:
             logger.info(f"Loading Pixtral model with {self.quantization}-bit quantization")
             
             # Validate model directory structure
-            required_files = ['config.json', 'pytorch_model.bin']
+            required_files = ['config.json', 'model.safetensors.index.json']
             missing_files = [f for f in required_files if not (self.model_path / f).exists()]
             if missing_files:
                 raise FileNotFoundError(f"Missing required model files: {missing_files}")
