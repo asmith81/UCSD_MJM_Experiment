@@ -8,7 +8,7 @@ from YAML configuration files.
 import yaml
 from pathlib import Path
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 # Configure logging
 logging.basicConfig(
@@ -17,12 +17,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def load_prompt_template(prompt_strategy: str) -> str:
+def load_prompt_template(prompt_strategy: str, prompts_dir: Optional[Path] = None) -> str:
     """
     Load a prompt template for a specific strategy.
     
     Args:
         prompt_strategy: Name of the prompt strategy (e.g., 'basic_extraction', 'detailed')
+        prompts_dir: Optional path to prompts directory. If not provided, defaults to "config/prompts"
         
     Returns:
         Loaded prompt template string
@@ -33,7 +34,9 @@ def load_prompt_template(prompt_strategy: str) -> str:
     """
     try:
         # Construct path to prompt template
-        prompt_path = Path("config/prompts") / f"{prompt_strategy}.yaml"
+        if prompts_dir is None:
+            prompts_dir = Path("config/prompts")
+        prompt_path = prompts_dir / f"{prompt_strategy}.yaml"
         
         if not prompt_path.exists():
             raise FileNotFoundError(f"Prompt template not found: {prompt_path}")
