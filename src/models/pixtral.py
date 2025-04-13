@@ -175,10 +175,10 @@ class PixtralModel:
                 return_tensors="pt"
             ).to(self.device)
             
-            # Convert inputs to match model's dtype, keeping input_ids as integer type
+            # Convert inputs to match model's dtype
             if self.quantization in [4, 8, 16]:
                 for k, v in inputs.items():
-                    if k == 'input_ids':
+                    if k in ['input_ids', 'attention_mask', 'position_ids']:
                         inputs[k] = v.to(torch.long)  # Keep as integer type
                     else:
                         inputs[k] = v.to(torch.float16)

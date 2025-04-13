@@ -177,6 +177,15 @@ class DoctrModel:
                 else:
                     image_tensor = torch.from_numpy(np.array(image)).to(torch.float32)
                 
+                # Ensure image tensor is in correct format (C, H, W)
+                if len(image_tensor.shape) == 2:  # Grayscale
+                    image_tensor = image_tensor.unsqueeze(0)
+                elif len(image_tensor.shape) == 3:  # RGB
+                    image_tensor = image_tensor.permute(2, 0, 1)
+                
+                # Normalize image
+                image_tensor = image_tensor / 255.0
+                
                 doc = self.model([image_tensor])
                 
             # Extract text
