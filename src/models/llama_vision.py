@@ -8,7 +8,7 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import LlamaForCausalLM, LlamaTokenizer
+from transformers import MllamaForConditionalGeneration, MllamaProcessor
 from PIL import Image
 import logging
 from pathlib import Path
@@ -61,7 +61,7 @@ class LlamaVisionModel:
         self.quantization = quantization
         self.device = device
         self.model = None
-        self.tokenizer = None
+        self.processor = None
         self._load_model()
         
     def _load_model(self) -> None:
@@ -79,36 +79,36 @@ class LlamaVisionModel:
             if missing_files:
                 raise FileNotFoundError(f"Missing required model files: {missing_files}")
             
-            # Load tokenizer
-            self.tokenizer = LlamaTokenizer.from_pretrained(
+            # Load processor
+            self.processor = MllamaProcessor.from_pretrained(
                 str(self.model_path),
                 trust_remote_code=True
             )
             
             # Load model with quantization
             if self.quantization == 32:
-                self.model = LlamaForCausalLM.from_pretrained(
+                self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float32,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 16:
-                self.model = LlamaForCausalLM.from_pretrained(
+                self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float16,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 8:
-                self.model = LlamaForCausalLM.from_pretrained(
+                self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_8bit=True,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 4:
-                self.model = LlamaForCausalLM.from_pretrained(
+                self.model = MllamaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_4bit=True,
                     device_map=self.device,
@@ -151,14 +151,11 @@ class LlamaVisionModel:
             image = preprocess_image(Path(image_path), config)
             
             # Prepare model inputs
-            inputs = self.tokenizer(
-                prompt,
+            inputs = self.processor(
+                image,
                 return_tensors="pt",
                 padding=True
             ).to(self.device)
-            
-            # Add image to inputs
-            inputs["pixel_values"] = image
             
             # Run inference
             with torch.no_grad():
@@ -170,7 +167,7 @@ class LlamaVisionModel:
                 )
                 
             # Decode output
-            output_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            output_text = self.processor.decode(outputs[0], skip_special_tokens=True)
             
             # Parse output
             parsed_value = parse_model_output(output_text, field_type)

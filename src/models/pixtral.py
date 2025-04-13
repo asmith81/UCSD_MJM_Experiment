@@ -8,7 +8,7 @@ inference functions, and output parsing.
 
 from typing import Dict, Any, Optional, Union
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoProcessor
+from transformers import LlavaForConditionalGeneration, AutoTokenizer, AutoProcessor
 from PIL import Image
 import logging
 from pathlib import Path
@@ -81,28 +81,28 @@ class PixtralModel:
             
             # Load model with quantization
             if self.quantization == 32:
-                self.model = AutoModelForCausalLM.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float32,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 16:
-                self.model = AutoModelForCausalLM.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     torch_dtype=torch.float16,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 8:
-                self.model = AutoModelForCausalLM.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_8bit=True,
                     device_map=self.device,
                     trust_remote_code=True
                 )
             elif self.quantization == 4:
-                self.model = AutoModelForCausalLM.from_pretrained(
+                self.model = LlavaForConditionalGeneration.from_pretrained(
                     str(self.model_path),
                     load_in_4bit=True,
                     device_map=self.device,
