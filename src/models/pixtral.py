@@ -176,7 +176,7 @@ class PixtralModel:
                 "role": "user",
                 "content": [
                     {"type": "text", "content": prompt},
-                    {"type": "image"}
+                    {"type": "image", "image": image}
                 ]
             }]
             
