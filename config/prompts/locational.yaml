@@ -16,12 +16,11 @@ prompts:
       Please analyze this invoice with attention to field locations:
       
       1. Work Order Number:
-         - Typically found in the header or top section
-         - Often near the invoice number
+         - Typically found in upper right portion of image
          - May be in a box or labeled section
       
       2. Total Cost:
-         - Usually in the bottom section
+         - Usually in the bottom right section
          - Often in a "Total" or "Amount Due" box
          - May be the last line item
       

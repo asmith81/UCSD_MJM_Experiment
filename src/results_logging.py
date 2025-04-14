@@ -1,6 +1,8 @@
 """
-Result tracking and logging for LMM invoice data extraction comparison.
-Handles result capture, execution tracking, and result structure definitions.
+Result logging and evaluation module.
+
+This module provides functionality for logging and evaluating test results
+across different models and configurations.
 """
 
 import os
@@ -10,7 +12,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Union, TypedDict, Protocol
 from datetime import datetime
 import pandas as pd
-from .data_utils import normalize_work_order, normalize_total_cost, GroundTruthData
+from src.data_utils import normalize_work_order, normalize_total_cost, GroundTruthData
 
 # Configure logging
 logging.basicConfig(
@@ -120,6 +122,10 @@ def categorize_error(pred: str, true: str, field_type: str) -> str:
     if not pred or not true:
         return "missing_field"
         
+    # Return no_error if values match exactly
+    if pred == true:
+        return "no_error"
+        
     if field_type == "work_order":
         # Check for transposition
         if sorted(pred) == sorted(true) and pred != true:
@@ -209,6 +215,32 @@ def validate_model_output(model_output: Dict[str, Any]) -> bool:
                 
     return True
 
+def extract_json_from_output(output_text: str) -> Dict[str, Any]:
+    """
+    Extract JSON object from model output text.
+    
+    Args:
+        output_text: Raw model output text
+        
+    Returns:
+        Extracted JSON object as dictionary
+    """
+    try:
+        # Find the last JSON object in the output
+        json_start = output_text.rfind('{')
+        json_end = output_text.rfind('}') + 1
+        if json_start >= 0 and json_end > json_start:
+            json_str = output_text[json_start:json_end]
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError:
+                logger.warning(f"Failed to parse JSON: {json_str}")
+                return {}
+        return {}
+    except Exception as e:
+        logger.warning(f"Error extracting JSON: {str(e)}")
+        return {}
+
 def evaluate_model_output(
     model_output: str,
     ground_truth: GroundTruthData,
@@ -225,22 +257,11 @@ def evaluate_model_output(
     Returns:
         Dictionary containing evaluation metrics
     """
-    try:
-        # Extract JSON part from model output
-        json_start = model_output.find('{')
-        json_end = model_output.rfind('}') + 1
-        if json_start >= 0 and json_end > json_start:
-            json_str = model_output[json_start:json_end]
-            parsed_output = json.loads(json_str)
-        else:
-            parsed_output = {}
-            
-        work_order_pred = parsed_output.get('work_order_number', '')
-        total_cost_pred = parsed_output.get('total_cost', '')
-    except (json.JSONDecodeError, IndexError):
-        work_order_pred = ''
-        total_cost_pred = ''
-        
+    # Extract values from model output
+    parsed_output = extract_json_from_output(model_output)
+    work_order_pred = parsed_output.get('work_order_number', '')
+    total_cost_pred = parsed_output.get('total_cost', '')
+    
     # Get ground truth values
     work_order_truth = ground_truth.get('work_order_number', '')
     total_cost_truth = ground_truth.get('total_cost', '')
@@ -321,11 +342,18 @@ def log_result(
         # Create result structure
         result = create_result_structure(model_name, prompt_type, quant_level, environment)
         
+        # Get field type from model output
+        field_type = model_output.get('field_type', 'both')
+        
+        # Extract JSON part from model output
+        output_text = model_output['output']
+        parsed_output = extract_json_from_output(output_text)
+        
         # Evaluate model output
         evaluation = evaluate_model_output(
-            model_output['output'],
+            output_text,
             ground_truth,
-            model_output['field_type']
+            field_type
         )
         
         # Add result entry
@@ -333,17 +361,17 @@ def log_result(
             "ground_truth": ground_truth,
             "model_response": {
                 "work_order_number": {
-                    "raw_text": model_output['output'],
-                    "parsed_value": json.loads(model_output['output']).get('work_order_number', ''),
+                    "raw_text": output_text,
+                    "parsed_value": parsed_output.get('work_order_number', ''),
                     "normalized_value": normalize_work_order(
-                        json.loads(model_output['output']).get('work_order_number', '')
+                        parsed_output.get('work_order_number', '')
                     )
                 },
                 "total_cost": {
-                    "raw_text": model_output['output'],
-                    "parsed_value": json.loads(model_output['output']).get('total_cost', ''),
+                    "raw_text": output_text,
+                    "parsed_value": parsed_output.get('total_cost', ''),
                     "normalized_value": normalize_total_cost(
-                        json.loads(model_output['output']).get('total_cost', '')
+                        parsed_output.get('total_cost', '')
                     )
                 },
                 "processing_time": processing_time

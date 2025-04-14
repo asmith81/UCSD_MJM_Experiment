@@ -414,4 +414,7 @@ def process_image_wrapper(
     # Update test parameters with prompt strategy
     response['test_parameters']['prompt_strategy'] = prompt_template
     
+    # Ensure field type is set in model response
+    response['model_response']['field_type'] = field_type
+    
     return response 
