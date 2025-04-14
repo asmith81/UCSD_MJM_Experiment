@@ -228,7 +228,7 @@ def run_single_test():
     try:
         # 1. Load first image
         image_dir = env['data_dir'] / 'images'
-        image_files = list(image_dir.glob('*.jpg')) + list(image_dir.glob('*.png'))
+        image_files = sorted(list(image_dir.glob('*.jpg')) + list(image_dir.glob('*.png')))
         if not image_files:
             raise FileNotFoundError("No images found in data directory")
             
@@ -247,34 +247,23 @@ def run_single_test():
         if not ground_truth_path.exists():
             raise FileNotFoundError(f"Ground truth file not found: {ground_truth_path}")
             
-        # Debug: Print CSV contents
-        print("\nGround Truth CSV Contents:")
-        with open(ground_truth_path, 'r') as f:
-            print(f.read())
-            
         ground_truth_df = pd.read_csv(ground_truth_path)
         
-        # Debug: Print DataFrame info
-        print("\nDataFrame Info:")
-        print(ground_truth_df.info())
-        print("\nDataFrame Columns:")
-        print(ground_truth_df.columns.tolist())
-        print("\nFirst Row:")
-        print(ground_truth_df.iloc[0])
-        
-        first_ground_truth = ground_truth_df.iloc[0]
-        
         # Validate required columns
-        required_columns = ['image_id', 'work_order_number', 'total_cost']
+        required_columns = ['Invoice', 'Work Order Number/Numero de Orden', 'Total']
         missing_columns = [col for col in required_columns if col not in ground_truth_df.columns]
         if missing_columns:
             raise ValueError(f"Ground truth CSV missing required columns: {missing_columns}")
         
+        # Get ground truth for first image
+        first_image_id = first_image_path.stem
+        first_ground_truth = ground_truth_df[ground_truth_df['Invoice'] == int(first_image_id)].iloc[0]
+        
         print("\nGround Truth Data:")
         display(Markdown(f"""
-        - Image ID: {first_ground_truth['image_id']}
-        - Work Order Number: {first_ground_truth['work_order_number']}
-        - Total Cost: {first_ground_truth['total_cost']}
+        - Invoice: {first_ground_truth['Invoice']}
+        - Work Order Number: {first_ground_truth['Work Order Number/Numero de Orden']}
+        - Total: {first_ground_truth['Total']}
         """))
         
         # 3. Load and display prompt

@@ -249,7 +249,7 @@ def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, GroundTruthData]:
         df = pd.read_csv(csv_path)
         
         # Validate required columns
-        required_columns = ['image_id', 'work_order_number', 'total_cost']
+        required_columns = ['Invoice', 'Work Order Number/Numero de Orden', 'Total']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
             raise ValueError(f"Ground truth CSV missing required columns: {missing_columns}")
@@ -259,20 +259,20 @@ def load_ground_truth(csv_path: Union[str, Path]) -> Dict[str, GroundTruthData]:
         
         # Process each row
         for _, row in df.iterrows():
-            image_id = str(row['image_id'])
+            image_id = str(row['Invoice'])
             
             # Normalize values
-            work_order = normalize_work_order(row['work_order_number'])
-            total_cost = normalize_total_cost(row['total_cost'])
+            work_order = normalize_work_order(row['Work Order Number/Numero de Orden'])
+            total_cost = normalize_total_cost(row['Total'])
             
             # Store normalized values
             ground_truth[image_id] = {
                 'work_order_number': {
-                    'raw_value': str(row['work_order_number']),
+                    'raw_value': str(row['Work Order Number/Numero de Orden']),
                     'normalized_value': work_order
                 },
                 'total_cost': {
-                    'raw_value': str(row['total_cost']),
+                    'raw_value': str(row['Total']),
                     'normalized_value': total_cost
                 }
             }
