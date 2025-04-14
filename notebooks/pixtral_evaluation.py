@@ -11,23 +11,68 @@ It follows the project's notebook handling rules and functional programming appr
 # This notebook evaluates the Pixtral model's performance across different quantization levels.
 
 # %%
-import json
-import logging
+import os
+import sys
+import subprocess
 from pathlib import Path
-from src import quantization_testing
+import logging
+import json
+
+# Configure logging first
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Determine root directory
+try:
+    # When running as a script
+    ROOT_DIR = Path(__file__).parent.parent
+except NameError:
+    # When running in a notebook, look for project root markers
+    current_dir = Path.cwd()
+    while current_dir != current_dir.parent:
+        if (current_dir / 'src').exists() and (current_dir / 'notebooks').exists():
+            ROOT_DIR = current_dir
+            break
+        current_dir = current_dir.parent
+    else:
+        raise RuntimeError("Could not find project root directory. Make sure you're running from within the project structure.")
+
+sys.path.append(str(ROOT_DIR))
+
+# Install dependencies
+print("Installing dependencies...")
+try:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(ROOT_DIR / "requirements.txt")])
+    print("Dependencies installed successfully.")
+    
+    # Install PyTorch dependencies separately
+    print("Installing PyTorch dependencies...")
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install",
+        "torch==2.1.0",
+        "torchvision==0.16.0",
+        "torchaudio==2.1.0",
+        "--index-url", "https://download.pytorch.org/whl/cu118"
+    ])
+    print("PyTorch dependencies installed successfully.")
+except subprocess.CalledProcessError as e:
+    logger.error(f"Error installing dependencies: {e}")
+    raise
+
+# Import project modules
+from src import execution
 from src.environment import setup_environment
 from src.config import load_yaml_config
 from src.models.pixtral import load_model, process_image_wrapper
 from src.prompts import load_prompt_template
 from src.validation import validate_results
 from src.data_utils import DataConfig
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from src import quantization_testing
 
 # Setup environment
-ROOT_DIR = Path(__file__).parent.parent
 env = setup_environment(ROOT_DIR)
 
 # Load configuration
