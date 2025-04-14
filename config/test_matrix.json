@@ -1,9 +1,8 @@
 {
     "test_cases": [
-        // Pixtral Model Tests
         {
             "model_name": "pixtral",
-            "field_type": "both",  // Will extract both work order and total
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
             "image_path": "data/images/1041.jpg"
@@ -141,7 +140,6 @@
             "quant_level": 32,
             "image_path": "data/images/1041.jpg"
         },
-        // Llama Vision Model Tests (same pattern)
         {
             "model_name": "llama_vision",
             "field_type": "both",
@@ -282,7 +280,6 @@
             "quant_level": 32,
             "image_path": "data/images/1039.jpg"
         },
-        // Doctr Model Tests (same pattern)
         {
             "model_name": "doctr",
             "field_type": "both",
