@@ -8,8 +8,81 @@ It follows the project's notebook handling rules and functional programming appr
 # %% [markdown]
 # # Pixtral Model Evaluation
 # 
-# This notebook evaluates the Pixtral-12B model's performance across different quantization levels
-# and prompt strategies for invoice data extraction.
+# This notebook evaluates the Pixtral model's performance across different quantization levels.
+
+# %%
+import json
+import logging
+from pathlib import Path
+from src import quantization_testing
+from src.environment import setup_environment
+from src.config import load_yaml_config
+from src.models.pixtral import load_model, process_image_wrapper
+from src.prompts import load_prompt_template
+from src.validation import validate_results
+from src.data_utils import DataConfig
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Setup environment
+ROOT_DIR = Path(__file__).parent.parent
+env = setup_environment(ROOT_DIR)
+
+# Load configuration
+config = load_yaml_config(ROOT_DIR / "config" / "models" / "pixtral.yaml")
+
+# Set model name
+MODEL_NAME = "pixtral"
+
+# Load test matrix
+with open(ROOT_DIR / "config" / "test_matrix.json", 'r') as f:
+    test_matrix = json.load(f)
+
+# Create data config
+data_config = DataConfig(
+    image_dir=env['data_dir'] / 'images',
+    ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
+    image_extensions=['.jpg', '.jpeg', '.png'],
+    max_image_size=1120,
+    supported_formats=['RGB', 'L'],
+    image_processor=None
+)
+
+# Run test suite across all quantization levels
+results = quantization_testing.run_quantization_test_suite(
+    model_name=MODEL_NAME,
+    test_matrix=test_matrix,
+    model_loader=lambda name, quant: load_model(
+        model_name=name,
+        quantization=quant,
+        models_dir=env['models_dir'],
+        config=config
+    ),
+    processor=lambda model, prompt, test_case: process_image_wrapper(
+        model=model,
+        prompt_template=prompt,
+        image_path=test_case['image_path'],
+        field_type=test_case['field_type'],
+        config=data_config
+    ),
+    prompt_loader=lambda strategy: load_prompt_template(
+        prompt_strategy=strategy,
+        prompts_dir=ROOT_DIR / "config" / "prompts"
+    ),
+    result_validator=validate_results,
+    project_root=ROOT_DIR,
+    execution_log_path=env['logs_dir'] / f"{MODEL_NAME}_execution.log"
+)
+
+# Print results summary
+for quant_level, level_results in results.items():
+    logger.info(f"\n{quant_level}-bit Quantization Results:")
+    logger.info(f"Total test cases: {len(level_results)}")
+    if level_results:
+        accuracy = sum(1 for r in level_results if r['is_correct']) / len(level_results)
+        logger.info(f"Accuracy: {accuracy:.2%}")
 
 # %% [markdown]
 # ## Environment Setup
@@ -344,43 +417,39 @@ test_result = run_single_test()
 
 # %%
 def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
-    """Run test suite for a specific quantization level."""
+    """
+    Run test suite for a specific quantization level.
+    
+    Args:
+        quant_level: Quantization level to test (4, 8, 16, 32)
+        test_matrix: Full test matrix dictionary
+        
+    Returns:
+        List of test results
+    """
+    # Filter test cases for this quantization level and model
+    quant_test_cases = [
+        case for case in test_matrix['test_cases']
+        if case['quant_level'] == quant_level and case['model_name'] == MODEL_NAME
+    ]
+    
+    if not quant_test_cases:
+        logger.warning(f"No test cases found for {MODEL_NAME} at {quant_level}-bit quantization")
+        return []
+    
+    # Create temporary test matrix file
+    import tempfile
+    import os
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
+        json.dump({'test_cases': quant_test_cases}, temp_file)
+        temp_path = temp_file.name
+    
     try:
-        # Track execution start for this quantization level
-        track_execution(
-            EXECUTION_LOG_PATH,
-            MODEL_NAME,
-            f"quant_{quant_level}",
-            0,
-            "started"
-        )
-        
-        # Create data config
-        data_config = DataConfig(
-            image_dir=env['data_dir'] / 'images',
-            ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
-            image_extensions=['.jpg', '.jpeg', '.png'],
-            max_image_size=1120,
-            supported_formats=['RGB', 'L'],
-            image_processor=None
-        )
-        
-        # Filter test cases for this quantization level and model
-        quant_test_cases = [
-            case for case in test_matrix['test_cases'] 
-            if case['quant_level'] == quant_level and case['model_name'] == MODEL_NAME
-        ]
-        
-        if not quant_test_cases:
-            logger.warning(f"No test cases found for {MODEL_NAME} at {quant_level}-bit quantization")
-            return []
-        
-        logger.info(f"Found {len(quant_test_cases)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")
-        
         # Run test suite for this quantization level
         results = execution.run_test_suite(
             model_name=MODEL_NAME,
-            test_matrix={'test_cases': quant_test_cases},  # Create subset matrix
+            test_matrix_path=temp_path,
             model_loader=lambda name, quant: load_model(
                 model_name=name,
                 quantization=quant,
@@ -404,29 +473,14 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
         
         # Log results
         logger.info(f"Completed {len(results)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")
-        
-        # Track execution completion
-        track_execution(
-            EXECUTION_LOG_PATH,
-            MODEL_NAME,
-            f"quant_{quant_level}",
-            0,
-            "completed"
-        )
-        
         return results
         
-    except Exception as e:
-        logger.error(f"Error running test suite for {quant_level}-bit quantization: {str(e)}")
-        track_execution(
-            EXECUTION_LOG_PATH,
-            MODEL_NAME,
-            f"quant_{quant_level}",
-            0,
-            "failed",
-            str(e)
-        )
-        raise
+    finally:
+        # Clean up temporary file
+        try:
+            os.unlink(temp_path)
+        except Exception as e:
+            logger.warning(f"Failed to delete temporary file {temp_path}: {e}")
 
 # %% [markdown]
 # ### Run 32-bit Quantization Tests
