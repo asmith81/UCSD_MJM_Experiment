@@ -220,7 +220,7 @@ def evaluate_model_output(
     Args:
         model_output: Raw model output text
         ground_truth: Ground truth data
-        field_type: Type of field being evaluated
+        field_type: Type of field being evaluated ('work_order_number', 'total_cost', or 'both')
         
     Returns:
         Dictionary containing evaluation metrics
@@ -245,24 +245,44 @@ def evaluate_model_output(
     work_order_truth = ground_truth.get('work_order_number', '')
     total_cost_truth = ground_truth.get('total_cost', '')
     
-    # Calculate CER and matches
-    work_order_cer = calculate_cer(work_order_pred, work_order_truth)
-    total_cost_cer = calculate_cer(total_cost_pred, total_cost_truth)
+    # Normalize values for comparison
+    def normalize_work_order(value: str) -> str:
+        return ''.join(c for c in value if c.isalnum())
+        
+    def normalize_total_cost(value: str) -> str:
+        # Remove currency symbol and whitespace, keep only digits and decimal
+        return ''.join(c for c in value if c.isdigit() or c == '.')
     
-    return {
-        'work_order_number': {
+    # Normalize values
+    work_order_pred_norm = normalize_work_order(work_order_pred)
+    work_order_truth_norm = normalize_work_order(work_order_truth)
+    total_cost_pred_norm = normalize_total_cost(total_cost_pred)
+    total_cost_truth_norm = normalize_total_cost(total_cost_truth)
+    
+    # Initialize result dictionary
+    result = {}
+    
+    # Evaluate work order number if requested
+    if field_type in ['work_order_number', 'both']:
+        work_order_cer = calculate_cer(work_order_pred_norm, work_order_truth_norm)
+        result['work_order_number'] = {
             'raw_string_match': work_order_pred == work_order_truth,
-            'normalized_match': work_order_pred.strip() == work_order_truth.strip(),
+            'normalized_match': work_order_pred_norm == work_order_truth_norm,
             'cer': work_order_cer,
-            'error_category': categorize_error(work_order_pred, work_order_truth, 'work_order')
-        },
-        'total_cost': {
-            'raw_string_match': total_cost_pred == total_cost_truth,
-            'normalized_match': total_cost_pred.strip() == total_cost_truth.strip(),
-            'cer': total_cost_cer,
-            'error_category': categorize_error(total_cost_pred, total_cost_truth, 'total_cost')
+            'error_category': categorize_error(work_order_pred_norm, work_order_truth_norm, 'work_order')
         }
-    }
+    
+    # Evaluate total cost if requested
+    if field_type in ['total_cost', 'both']:
+        total_cost_cer = calculate_cer(total_cost_pred_norm, total_cost_truth_norm)
+        result['total_cost'] = {
+            'raw_string_match': total_cost_pred == total_cost_truth,
+            'normalized_match': total_cost_pred_norm == total_cost_truth_norm,
+            'cer': total_cost_cer,
+            'error_category': categorize_error(total_cost_pred_norm, total_cost_truth_norm, 'total_cost')
+        }
+    
+    return result
 
 def log_result(
     result_path: Union[str, Path],
