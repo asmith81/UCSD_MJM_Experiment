@@ -226,11 +226,18 @@ def evaluate_model_output(
         Dictionary containing evaluation metrics
     """
     try:
-        # Parse model output
-        parsed_output = json.loads(model_output)
+        # Extract JSON part from model output
+        json_start = model_output.find('{')
+        json_end = model_output.rfind('}') + 1
+        if json_start >= 0 and json_end > json_start:
+            json_str = model_output[json_start:json_end]
+            parsed_output = json.loads(json_str)
+        else:
+            parsed_output = {}
+            
         work_order_pred = parsed_output.get('work_order_number', '')
         total_cost_pred = parsed_output.get('total_cost', '')
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, IndexError):
         work_order_pred = ''
         total_cost_pred = ''
         
