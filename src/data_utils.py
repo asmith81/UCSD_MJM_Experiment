@@ -94,20 +94,21 @@ def setup_data_paths(
         OSError: If required directories don't exist
     """
     try:
-        data_config: DataConfig = {
-            'image_dir': env_config['data_dir'] / 'images',
-            'ground_truth_csv': env_config['data_dir'] / 'ground_truth.csv',
-            'image_extensions': image_extensions or ['.jpg', '.jpeg', '.png'],
-            'max_image_size': max_image_size or 1120,
-            'supported_formats': supported_formats or ['RGB', 'L'],
-            'image_processor': image_processor or DefaultImageProcessor()
-        }
+        # Create DataConfig object
+        data_config = DataConfig(
+            image_dir=env_config['data_dir'] / 'images',
+            ground_truth_csv=env_config['data_dir'] / 'ground_truth.csv',
+            image_extensions=image_extensions or ['.jpg', '.jpeg', '.png'],
+            max_image_size=max_image_size or 1120,
+            supported_formats=supported_formats or ['RGB', 'L'],
+            image_processor=image_processor or DefaultImageProcessor()
+        )
         
         # Validate paths
-        if not data_config['image_dir'].exists():
-            raise OSError(f"Image directory not found: {data_config['image_dir']}")
-        if not data_config['ground_truth_csv'].exists():
-            raise OSError(f"Ground truth CSV not found: {data_config['ground_truth_csv']}")
+        if not data_config.image_dir.exists():
+            raise OSError(f"Image directory not found: {data_config.image_dir}")
+        if not data_config.ground_truth_csv.exists():
+            raise OSError(f"Ground truth CSV not found: {data_config.ground_truth_csv}")
             
         return data_config
         
