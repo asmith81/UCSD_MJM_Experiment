@@ -338,19 +338,19 @@ def run_single_test():
 test_result = run_single_test()
 
 # %% [markdown]
-# ## Run Test Suite
+# ## Run Test Suite by Quantization Level
 # 
-# Execute the test suite for Pixtral model.
+# Execute the test suite for Pixtral model, broken down by quantization level.
 
 # %%
-def main():
-    """Run the test suite and handle results."""
+def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
+    """Run test suite for a specific quantization level."""
     try:
-        # Track execution start
+        # Track execution start for this quantization level
         track_execution(
             EXECUTION_LOG_PATH,
             MODEL_NAME,
-            "all",
+            f"quant_{quant_level}",
             0,
             "started"
         )
@@ -365,10 +365,18 @@ def main():
             image_processor=None
         )
         
-        # Run test suite
+        # Filter test cases for this quantization level
+        quant_test_cases = [case for case in test_matrix['test_cases'] 
+                          if case['quant_level'] == quant_level]
+        
+        if not quant_test_cases:
+            logger.warning(f"No test cases found for {quant_level}-bit quantization")
+            return []
+        
+        # Run test suite for this quantization level
         results = execution.run_test_suite(
             model_name=MODEL_NAME,
-            test_matrix_path=TEST_MATRIX_PATH,
+            test_matrix={'test_cases': quant_test_cases},  # Create subset matrix
             model_loader=lambda name, quant: load_model(
                 model_name=name,
                 quantization=quant,
@@ -391,13 +399,13 @@ def main():
         )
         
         # Log results
-        logger.info(f"Completed {len(results)} test cases for {MODEL_NAME}")
+        logger.info(f"Completed {len(results)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")
         
         # Track execution completion
         track_execution(
             EXECUTION_LOG_PATH,
             MODEL_NAME,
-            "all",
+            f"quant_{quant_level}",
             0,
             "completed"
         )
@@ -405,86 +413,89 @@ def main():
         return results
         
     except Exception as e:
-        logger.error(f"Error running test suite: {str(e)}")
+        logger.error(f"Error running test suite for {quant_level}-bit quantization: {str(e)}")
         track_execution(
             EXECUTION_LOG_PATH,
             MODEL_NAME,
-            "all",
+            f"quant_{quant_level}",
             0,
             "failed",
             str(e)
         )
         raise
 
-if __name__ == "__main__":
-    results = main()
+# %% [markdown]
+# ### Run 32-bit Quantization Tests
+# 
+# Run the test suite with full precision (32-bit) quantization.
+
+# %%
+# Load test matrix
+with open(TEST_MATRIX_PATH, 'r') as f:
+    test_matrix = json.load(f)
+
+# Run 32-bit tests
+results_32bit = run_quantization_level(32, test_matrix)
+
+# %% [markdown]
+# ### Run 16-bit Quantization Tests
+# 
+# Run the test suite with 16-bit quantization.
+
+# %%
+# Run 16-bit tests
+results_16bit = run_quantization_level(16, test_matrix)
+
+# %% [markdown]
+# ### Run 8-bit Quantization Tests
+# 
+# Run the test suite with 8-bit quantization.
+
+# %%
+# Run 8-bit tests
+results_8bit = run_quantization_level(8, test_matrix)
+
+# %% [markdown]
+# ### Run 4-bit Quantization Tests
+# 
+# Run the test suite with 4-bit quantization.
+
+# %%
+# Run 4-bit tests
+results_4bit = run_quantization_level(4, test_matrix)
 
 # %% [markdown]
 # ## Results Analysis
 # 
-# Analyze and visualize the results for Pixtral model.
+# Analyze and visualize the results for Pixtral model across all quantization levels.
 
 # %%
-def analyze_results(results: list) -> dict:
-    """Analyze test results for Pixtral model."""
-    if not results:
-        logger.warning("No results to analyze")
-        return {}
-        
-    # Validate result structure
-    required_fields = ['test_parameters', 'evaluation', 'model_response']
-    for result in results:
-        missing_fields = [field for field in required_fields if field not in result]
-        if missing_fields:
-            logger.warning(f"Result missing required fields: {missing_fields}")
-            continue
-            
-    # Group results by quantization level
-    quant_results = {}
-    for result in results:
-        try:
-            quant_level = result['test_parameters']['quantization']
-            if quant_level not in quant_results:
-                quant_results[quant_level] = []
-            quant_results[quant_level].append(result)
-        except KeyError:
-            logger.warning("Result missing quantization level")
-            continue
+def analyze_all_results():
+    """Analyze results from all quantization levels."""
+    all_results = []
+    for quant_level, results in [
+        (32, results_32bit),
+        (16, results_16bit),
+        (8, results_8bit),
+        (4, results_4bit)
+    ]:
+        if results:
+            all_results.extend(results)
     
-    # Calculate metrics per quantization level
-    metrics = {}
-    for quant_level, quant_results in quant_results.items():
-        if not quant_results:
-            continue
-            
-        total_tests = len(quant_results)
-        correct_work_order = sum(1 for r in quant_results 
-                               if r['evaluation']['work_order_number']['normalized_match'])
-        correct_total_cost = sum(1 for r in quant_results 
-                               if r['evaluation']['total_cost']['normalized_match'])
-        
-        metrics[quant_level] = {
-            'work_order_accuracy': correct_work_order / total_tests if total_tests > 0 else 0,
-            'total_cost_accuracy': correct_total_cost / total_tests if total_tests > 0 else 0,
-            'avg_processing_time': sum(r['model_response']['processing_time'] 
-                                    for r in quant_results) / total_tests if total_tests > 0 else 0
-        }
-    
-    return metrics
+    return analyze_results(all_results)
 
-# Analyze results
-if 'results' in locals():
-    try:
-        metrics = analyze_results(results)
-        if metrics:
-            print("\nPerformance Metrics by Quantization Level:")
-            for quant_level, metric in metrics.items():
-                print(f"\n{quant_level}-bit Quantization:")
-                print(f"Work Order Accuracy: {metric['work_order_accuracy']:.2%}")
-                print(f"Total Cost Accuracy: {metric['total_cost_accuracy']:.2%}")
-                print(f"Average Processing Time: {metric['avg_processing_time']:.2f}s")
-        else:
-            print("No valid results to analyze")
-    except Exception as e:
-        logger.error(f"Error analyzing results: {str(e)}")
-        raise 
+# Analyze all results
+try:
+    metrics = analyze_all_results()
+    if metrics:
+        print("\nPerformance Metrics by Quantization Level:")
+        for quant_level, metric in metrics.items():
+            print(f"\n{quant_level}-bit Quantization:")
+            print(f"Work Order Accuracy: {metric['work_order_accuracy']:.2%}")
+            print(f"Total Cost Accuracy: {metric['total_cost_accuracy']:.2%}")
+            print(f"Average Processing Time: {metric['avg_processing_time']:.2f}s")
+    else:
+        print("No valid results to analyze")
+except Exception as e:
+    logger.error(f"Error analyzing results: {str(e)}")
+    raise 
