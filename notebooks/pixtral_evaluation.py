@@ -76,7 +76,7 @@ from src.models.pixtral import load_model, process_image_wrapper, download_pixtr
 from src.prompts import load_prompt_template
 from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output
 from src.validation import validate_results
-from src.data_utils import DataConfig
+from src.data_utils import DataConfig, setup_data_paths
 
 # Setup environment
 try:
@@ -113,6 +113,19 @@ try:
         raise ValueError(f"Configuration missing required sections: {missing_sections}")
 except Exception as e:
     logger.error(f"Error loading configuration: {str(e)}")
+    raise
+
+# Setup data configuration
+try:
+    data_config = setup_data_paths(
+        env_config=env,
+        image_extensions=['.jpg', '.jpeg', '.png'],
+        max_image_size=1120,
+        supported_formats=['RGB', 'L']
+    )
+    logger.info("Data configuration setup successfully")
+except Exception as e:
+    logger.error(f"Error setting up data configuration: {str(e)}")
     raise
 
 # %% [markdown]
@@ -285,15 +298,6 @@ def run_single_test():
         )
         
         # 5. Process image and get model response
-        data_config = DataConfig(
-            image_dir=env['data_dir'] / 'images',
-            ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
-            image_extensions=['.jpg', '.jpeg', '.png'],
-            max_image_size=1120,
-            supported_formats=['RGB', 'L'],
-            image_processor=None
-        )
-        
         print("\nRunning model inference...")
         result = process_image_wrapper(
             model=model,

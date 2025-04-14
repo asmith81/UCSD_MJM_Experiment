@@ -70,13 +70,13 @@ except subprocess.CalledProcessError as e:
 
 # Import project modules
 from src import execution
-from src.environment import setup_environment
+from src.environment import setup_environment, download_model
 from src.config import load_yaml_config
 from src.models.doctr import load_model, process_image_wrapper, download_doctr_model
 from src.prompts import load_prompt_template
-from src.results_logging import track_execution, log_result, ResultStructure
+from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output
 from src.validation import validate_results
-from src.data_utils import DataConfig
+from src.data_utils import DataConfig, setup_data_paths
 
 # Setup environment
 try:
@@ -113,6 +113,19 @@ try:
         raise ValueError(f"Configuration missing required sections: {missing_sections}")
 except Exception as e:
     logger.error(f"Error loading configuration: {str(e)}")
+    raise
+
+# Setup data configuration
+try:
+    data_config = setup_data_paths(
+        env_config=env,
+        image_extensions=['.jpg', '.jpeg', '.png'],
+        max_image_size=1120,
+        supported_formats=['RGB', 'L']
+    )
+    logger.info("Data configuration setup successfully")
+except Exception as e:
+    logger.error(f"Error setting up data configuration: {str(e)}")
     raise
 
 # %% [markdown]
@@ -238,16 +251,6 @@ def main():
             "all",
             0,
             "started"
-        )
-        
-        # Create data config
-        data_config = DataConfig(
-            image_dir=env['data_dir'] / 'images',
-            ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
-            image_extensions=['.jpg', '.jpeg', '.png'],
-            max_image_size=1120,
-            supported_formats=['RGB', 'L'],
-            image_processor=None
         )
         
         # Run test suite
