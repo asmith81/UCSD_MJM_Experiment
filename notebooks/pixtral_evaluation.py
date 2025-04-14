@@ -365,13 +365,17 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             image_processor=None
         )
         
-        # Filter test cases for this quantization level
-        quant_test_cases = [case for case in test_matrix['test_cases'] 
-                          if case['quant_level'] == quant_level]
+        # Filter test cases for this quantization level and model
+        quant_test_cases = [
+            case for case in test_matrix['test_cases'] 
+            if case['quant_level'] == quant_level and case['model_name'] == MODEL_NAME
+        ]
         
         if not quant_test_cases:
-            logger.warning(f"No test cases found for {quant_level}-bit quantization")
+            logger.warning(f"No test cases found for {MODEL_NAME} at {quant_level}-bit quantization")
             return []
+        
+        logger.info(f"Found {len(quant_test_cases)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")
         
         # Run test suite for this quantization level
         results = execution.run_test_suite(

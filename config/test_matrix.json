@@ -1,88 +1,427 @@
 {
     "test_cases": [
+        // Pixtral Model Tests
         {
             "model_name": "pixtral",
-            "field_type": "work_order_number",
+            "field_type": "both",  // Will extract both work order and total
             "prompt_type": "basic_extraction",
             "quant_level": 4,
             "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "work_order_number",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 8,
-            "image_path": "data/images/1042.jpg"
+            "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "total_cost",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
             "quant_level": 4,
-            "image_path": "data/images/1043.jpg"
+            "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "total_cost",
-            "prompt_type": "basic_extraction",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
             "quant_level": 8,
-            "image_path": "data/images/1038.jpg"
+            "image_path": "data/images/1041.jpg"
         },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 16,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 32,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 4,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 8,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 16,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 32,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 4,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 8,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 16,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 32,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 4,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 8,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 16,
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 32,
+            "image_path": "data/images/1041.jpg"
+        },
+        // Llama Vision Model Tests (same pattern)
         {
             "model_name": "llama_vision",
-            "field_type": "work_order_number",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
             "image_path": "data/images/1039.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "work_order_number",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 8,
             "image_path": "data/images/1040.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "total_cost",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
-            "quant_level": 4,
+            "quant_level": 16,
             "image_path": "data/images/1030.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "total_cost",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
-            "quant_level": 8,
-            "image_path": "data/images/1031.jpg"
+            "quant_level": 32,
+            "image_path": "data/images/1030.jpg"
         },
         {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 4,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 8,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 16,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 32,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 4,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 8,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 16,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 32,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 4,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 8,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 16,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 32,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 4,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 8,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 16,
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 32,
+            "image_path": "data/images/1039.jpg"
+        },
+        // Doctr Model Tests (same pattern)
+        {
             "model_name": "doctr",
-            "field_type": "work_order_number",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
             "image_path": "data/images/1029.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "work_order_number",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 8,
             "image_path": "data/images/1027.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "total_cost",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
-            "quant_level": 4,
-            "image_path": "data/images/1028.jpg"
+            "quant_level": 16,
+            "image_path": "data/images/1029.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "total_cost",
+            "field_type": "both",
             "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 4,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
             "quant_level": 8,
-            "image_path": "data/images/1023.jpg"
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 16,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "step_by_step",
+            "quant_level": 32,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 4,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 8,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 16,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "detailed",
+            "quant_level": 32,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 4,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 8,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 16,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "few_shot",
+            "quant_level": 32,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 4,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 8,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 16,
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "field_type": "both",
+            "prompt_type": "locational",
+            "quant_level": 32,
+            "image_path": "data/images/1029.jpg"
         }
     ]
 } 
