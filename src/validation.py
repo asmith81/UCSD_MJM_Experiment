@@ -6,6 +6,8 @@ This module provides functionality for validating test results across different 
 
 from typing import Dict, Any
 import logging
+from .results_logging import evaluate_model_output
+from .data_utils import GroundTruthData
 
 # Configure logging
 logging.basicConfig(
@@ -29,7 +31,7 @@ def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
     """
     try:
         # Check required fields
-        required_fields = ['test_parameters', 'model_response', 'evaluation']
+        required_fields = ['test_parameters', 'model_response']
         missing_fields = [field for field in required_fields if field not in result]
         if missing_fields:
             raise ValueError(f"Result missing required fields: {missing_fields}")
@@ -54,11 +56,17 @@ def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
             result['model_response']['processing_time'] = 0.0
             logger.warning("Processing time not provided, using default value of 0.0")
             
-        # Validate evaluation
-        if 'work_order_number' not in result['evaluation']:
-            raise ValueError("Missing work order number evaluation")
-        if 'total_cost' not in result['evaluation']:
-            raise ValueError("Missing total cost evaluation")
+        # Get ground truth from test parameters
+        ground_truth = result['test_parameters'].get('ground_truth', {})
+        field_type = result['test_parameters'].get('field_type', 'both')
+        
+        # Evaluate results if not already evaluated
+        if 'evaluation' not in result:
+            result['evaluation'] = evaluate_model_output(
+                result['model_response']['output'],
+                ground_truth,
+                field_type
+            )
             
         # Ensure evaluation fields have required subfields
         for field in ['work_order_number', 'total_cost']:

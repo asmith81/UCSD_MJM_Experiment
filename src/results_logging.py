@@ -209,6 +209,54 @@ def validate_model_output(model_output: Dict[str, Any]) -> bool:
                 
     return True
 
+def evaluate_model_output(
+    model_output: str,
+    ground_truth: GroundTruthData,
+    field_type: str
+) -> Dict[str, Any]:
+    """
+    Evaluate model output against ground truth.
+    
+    Args:
+        model_output: Raw model output text
+        ground_truth: Ground truth data
+        field_type: Type of field being evaluated
+        
+    Returns:
+        Dictionary containing evaluation metrics
+    """
+    try:
+        # Parse model output
+        parsed_output = json.loads(model_output)
+        work_order_pred = parsed_output.get('work_order_number', '')
+        total_cost_pred = parsed_output.get('total_cost', '')
+    except json.JSONDecodeError:
+        work_order_pred = ''
+        total_cost_pred = ''
+        
+    # Get ground truth values
+    work_order_truth = ground_truth.get('work_order_number', '')
+    total_cost_truth = ground_truth.get('total_cost', '')
+    
+    # Calculate CER and matches
+    work_order_cer = calculate_cer(work_order_pred, work_order_truth)
+    total_cost_cer = calculate_cer(total_cost_pred, total_cost_truth)
+    
+    return {
+        'work_order_number': {
+            'raw_string_match': work_order_pred == work_order_truth,
+            'normalized_match': work_order_pred.strip() == work_order_truth.strip(),
+            'cer': work_order_cer,
+            'error_category': categorize_error(work_order_pred, work_order_truth, 'work_order')
+        },
+        'total_cost': {
+            'raw_string_match': total_cost_pred == total_cost_truth,
+            'normalized_match': total_cost_pred.strip() == total_cost_truth.strip(),
+            'cer': total_cost_cer,
+            'error_category': categorize_error(total_cost_pred, total_cost_truth, 'total_cost')
+        }
+    }
+
 def log_result(
     result_path: Union[str, Path],
     image_id: str,
@@ -246,62 +294,34 @@ def log_result(
         # Create result structure
         result = create_result_structure(model_name, prompt_type, quant_level, environment)
         
+        # Evaluate model output
+        evaluation = evaluate_model_output(
+            model_output['output'],
+            ground_truth,
+            model_output['field_type']
+        )
+        
         # Add result entry
         result['results_by_image'][image_id] = {
             "ground_truth": ground_truth,
             "model_response": {
                 "work_order_number": {
-                    "raw_text": model_output['work_order_number']['raw_text'],
-                    "parsed_value": model_output['work_order_number']['parsed_value'],
-                    "normalized_value": model_output['work_order_number']['normalized_value']
+                    "raw_text": model_output['output'],
+                    "parsed_value": json.loads(model_output['output']).get('work_order_number', ''),
+                    "normalized_value": normalize_work_order(
+                        json.loads(model_output['output']).get('work_order_number', '')
+                    )
                 },
                 "total_cost": {
-                    "raw_text": model_output['total_cost']['raw_text'],
-                    "parsed_value": model_output['total_cost']['parsed_value'],
-                    "normalized_value": model_output['total_cost']['normalized_value']
+                    "raw_text": model_output['output'],
+                    "parsed_value": json.loads(model_output['output']).get('total_cost', ''),
+                    "normalized_value": normalize_total_cost(
+                        json.loads(model_output['output']).get('total_cost', '')
+                    )
                 },
                 "processing_time": processing_time
             },
-            "evaluation": {
-                "work_order_number": {
-                    "raw_string_match": (
-                        model_output['work_order_number']['parsed_value'] == 
-                        ground_truth['work_order_number']['raw_value']
-                    ),
-                    "normalized_match": (
-                        model_output['work_order_number']['normalized_value'] == 
-                        ground_truth['work_order_number']['normalized_value']
-                    ),
-                    "cer": calculate_cer(
-                        model_output['work_order_number']['parsed_value'],
-                        ground_truth['work_order_number']['raw_value']
-                    ),
-                    "error_category": categorize_error(
-                        model_output['work_order_number']['parsed_value'],
-                        ground_truth['work_order_number']['raw_value'],
-                        "work_order"
-                    )
-                },
-                "total_cost": {
-                    "raw_string_match": (
-                        model_output['total_cost']['parsed_value'] == 
-                        ground_truth['total_cost']['raw_value']
-                    ),
-                    "normalized_match": (
-                        model_output['total_cost']['normalized_value'] == 
-                        ground_truth['total_cost']['normalized_value']
-                    ),
-                    "cer": calculate_cer(
-                        model_output['total_cost']['parsed_value'],
-                        ground_truth['total_cost']['raw_value']
-                    ),
-                    "error_category": categorize_error(
-                        model_output['total_cost']['parsed_value'],
-                        ground_truth['total_cost']['raw_value'],
-                        "total_cost"
-                    )
-                }
-            }
+            "evaluation": evaluation
         }
         
         # Save result

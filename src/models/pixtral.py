@@ -14,6 +14,7 @@ import logging
 from pathlib import Path
 import time
 from transformers import BitsAndBytesConfig
+import json
 
 from .common import (
     preprocess_image,
@@ -29,6 +30,84 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def calculate_cer(pred: str, true: str) -> float:
+    """
+    Calculate Character Error Rate between predicted and true values.
+    
+    Args:
+        pred: Predicted string
+        true: True string
+        
+    Returns:
+        Character Error Rate (0.0 to 1.0)
+    """
+    if not true:
+        return 1.0  # Maximum error if true value is empty
+        
+    # Levenshtein distance calculation
+    if len(pred) < len(true):
+        return calculate_cer(true, pred)
+        
+    if len(true) == 0:
+        return len(pred)
+        
+    previous_row = range(len(true) + 1)
+    for i, c1 in enumerate(pred):
+        current_row = [i + 1]
+        for j, c2 in enumerate(true):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+        
+    return previous_row[-1] / len(true)
+
+def categorize_error(pred: str, true: str, field_type: str) -> str:
+    """
+    Categorize error type based on field and difference.
+    
+    Args:
+        pred: Predicted value
+        true: True value
+        field_type: Type of field ('work_order' or 'total_cost')
+        
+    Returns:
+        Error category string
+    """
+    if not pred or not true:
+        return "missing_field"
+        
+    if field_type == "work_order":
+        # Check for transposition
+        if sorted(pred) == sorted(true) and pred != true:
+            return "transposition"
+            
+        # Check for length differences
+        if len(pred) < len(true):
+            return "missing_character"
+        if len(pred) > len(true):
+            return "extra_character"
+            
+        return "wrong_character"
+        
+    elif field_type == "total_cost":
+        # Check for currency symbol error
+        if ('$' in pred) != ('$' in true):
+            return "currency_error"
+            
+        # Check for decimal point errors
+        if ('.' in pred) != ('.' in true):
+            return "decimal_error"
+            
+        # Check for formatting errors
+        if any(c in pred for c in ',.') != any(c in true for c in ',.'):
+            return "formatting_error"
+            
+        return "digit_error"
+        
+    return "unknown_error"
 
 class PixtralModel:
     """Pixtral-12B model implementation."""
@@ -160,7 +239,7 @@ class PixtralModel:
             config: Data configuration
             
         Returns:
-            Dictionary with test parameters and model response
+            Dictionary with model response and processing time
             
         Raises:
             ValueError: If processing fails
@@ -222,7 +301,7 @@ class PixtralModel:
             # Calculate processing time
             processing_time = time.time() - start_time
             
-            # Structure result according to validation requirements
+            # Structure result
             result = {
                 'test_parameters': {
                     'model': 'pixtral',
@@ -231,20 +310,6 @@ class PixtralModel:
                 'model_response': {
                     'output': output_text,
                     'processing_time': processing_time
-                },
-                'evaluation': {
-                    'work_order_number': {
-                        'raw_string_match': False,
-                        'normalized_match': False,
-                        'cer': 0.0,
-                        'error_category': 'not_evaluated'
-                    },
-                    'total_cost': {
-                        'raw_string_match': False,
-                        'normalized_match': False,
-                        'cer': 0.0,
-                        'error_category': 'not_evaluated'
-                    }
                 }
             }
             

@@ -11,6 +11,8 @@ from typing import Dict, Any, List, Callable, Optional, Protocol
 import logging
 from pathlib import Path
 import json
+from .results_logging import evaluate_model_output
+from .data_utils import GroundTruthData
 
 # Configure logging
 logging.basicConfig(
@@ -137,6 +139,19 @@ def run_test_suite(
                     
                     # Run inference
                     result = processor(model, prompt_template, case)
+                    
+                    # Get ground truth
+                    ground_truth = case.get('ground_truth', {})
+                    
+                    # Evaluate results
+                    evaluation = evaluate_model_output(
+                        result['model_response']['output'],
+                        ground_truth,
+                        case['field_type']
+                    )
+                    
+                    # Add evaluation to result
+                    result['evaluation'] = evaluation
                     
                     # Validate results
                     validated_result = result_validator(result)
