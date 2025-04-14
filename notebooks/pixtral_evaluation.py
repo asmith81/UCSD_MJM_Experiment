@@ -247,8 +247,28 @@ def run_single_test():
         if not ground_truth_path.exists():
             raise FileNotFoundError(f"Ground truth file not found: {ground_truth_path}")
             
+        # Debug: Print CSV contents
+        print("\nGround Truth CSV Contents:")
+        with open(ground_truth_path, 'r') as f:
+            print(f.read())
+            
         ground_truth_df = pd.read_csv(ground_truth_path)
+        
+        # Debug: Print DataFrame info
+        print("\nDataFrame Info:")
+        print(ground_truth_df.info())
+        print("\nDataFrame Columns:")
+        print(ground_truth_df.columns.tolist())
+        print("\nFirst Row:")
+        print(ground_truth_df.iloc[0])
+        
         first_ground_truth = ground_truth_df.iloc[0]
+        
+        # Validate required columns
+        required_columns = ['image_id', 'work_order_number', 'total_cost']
+        missing_columns = [col for col in required_columns if col not in ground_truth_df.columns]
+        if missing_columns:
+            raise ValueError(f"Ground truth CSV missing required columns: {missing_columns}")
         
         print("\nGround Truth Data:")
         display(Markdown(f"""
