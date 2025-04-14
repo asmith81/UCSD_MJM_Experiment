@@ -74,7 +74,7 @@ from src.environment import setup_environment, download_model
 from src.config import load_yaml_config
 from src.models.pixtral import load_model, process_image_wrapper, download_pixtral_model
 from src.prompts import load_prompt_template
-from src.results_logging import track_execution, log_result, ResultStructure
+from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output
 from src.validation import validate_results
 from src.data_utils import DataConfig
 
@@ -299,9 +299,23 @@ def run_single_test():
             model=model,
             prompt_template=prompt_template,
             image_path=str(first_image_path),
-            field_type="work_order_number",  # Testing work order extraction
+            field_type="both",  # Testing both work order and total cost extraction
             config=data_config
         )
+        
+        # 6. Evaluate results using the new evaluation logic
+        ground_truth = {
+            'work_order_number': first_ground_truth['Work Order Number/Numero de Orden'],
+            'total_cost': first_ground_truth['Total']
+        }
+        
+        evaluation = evaluate_model_output(
+            result['model_response']['output'],
+            ground_truth,
+            "both"
+        )
+        
+        result['evaluation'] = evaluation
         
         print("\nModel Response:")
         display(Markdown(f"""
@@ -309,7 +323,9 @@ def run_single_test():
         - Processing Time: {result['model_response']['processing_time']:.2f}s
         - Evaluation:
             - Work Order Match: {result['evaluation']['work_order_number']['normalized_match']}
-            - CER: {result['evaluation']['work_order_number']['cer']:.2f}
+            - Work Order CER: {result['evaluation']['work_order_number']['cer']:.2f}
+            - Total Cost Match: {result['evaluation']['total_cost']['normalized_match']}
+            - Total Cost CER: {result['evaluation']['total_cost']['cer']:.2f}
         """))
         
         return result
