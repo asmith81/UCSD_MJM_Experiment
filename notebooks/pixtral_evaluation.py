@@ -213,6 +213,106 @@ except Exception as e:
     raise
 
 # %% [markdown]
+# ## Single Test Validation
+# 
+# Test the entire pipeline with a single example to verify system functionality.
+
+# %%
+import pandas as pd
+from PIL import Image
+import matplotlib.pyplot as plt
+from IPython.display import display, Markdown
+
+def run_single_test():
+    """Run a single test case through the entire pipeline."""
+    try:
+        # 1. Load first image
+        image_dir = env['data_dir'] / 'images'
+        image_files = list(image_dir.glob('*.jpg')) + list(image_dir.glob('*.png'))
+        if not image_files:
+            raise FileNotFoundError("No images found in data directory")
+            
+        first_image_path = image_files[0]
+        print(f"\nLoading image: {first_image_path}")
+        
+        # Display image
+        image = Image.open(first_image_path)
+        plt.figure(figsize=(10, 10))
+        plt.imshow(image)
+        plt.axis('off')
+        plt.show()
+        
+        # 2. Load ground truth
+        ground_truth_path = env['data_dir'] / 'ground_truth.csv'
+        if not ground_truth_path.exists():
+            raise FileNotFoundError(f"Ground truth file not found: {ground_truth_path}")
+            
+        ground_truth_df = pd.read_csv(ground_truth_path)
+        first_ground_truth = ground_truth_df.iloc[0]
+        
+        print("\nGround Truth Data:")
+        display(Markdown(f"""
+        - Image ID: {first_ground_truth['image_id']}
+        - Work Order Number: {first_ground_truth['work_order_number']}
+        - Total Cost: {first_ground_truth['total_cost']}
+        """))
+        
+        # 3. Load and display prompt
+        prompt_strategy = "basic_extraction"
+        prompt_template = load_prompt_template(
+            prompt_strategy=prompt_strategy,
+            prompts_dir=ROOT_DIR / "config" / "prompts"
+        )
+        
+        print("\nGenerated Prompt:")
+        display(Markdown(f"```\n{prompt_template}\n```"))
+        
+        # 4. Load model with default quantization
+        model = load_model(
+            model_name=MODEL_NAME,
+            quantization=32,  # Using full precision for test
+            models_dir=env['models_dir'],
+            config=config
+        )
+        
+        # 5. Process image and get model response
+        data_config = DataConfig(
+            image_dir=env['data_dir'] / 'images',
+            ground_truth_csv=env['data_dir'] / 'ground_truth.csv',
+            image_extensions=['.jpg', '.jpeg', '.png'],
+            max_image_size=1120,
+            supported_formats=['RGB', 'L'],
+            image_processor=None
+        )
+        
+        print("\nRunning model inference...")
+        result = process_image_wrapper(
+            model=model,
+            prompt_template=prompt_template,
+            image_path=str(first_image_path),
+            field_type="work_order_number",  # Testing work order extraction
+            config=data_config
+        )
+        
+        print("\nModel Response:")
+        display(Markdown(f"""
+        - Raw Output: {result['model_response']['output']}
+        - Processing Time: {result['model_response']['processing_time']:.2f}s
+        - Evaluation:
+            - Work Order Match: {result['evaluation']['work_order_number']['normalized_match']}
+            - CER: {result['evaluation']['work_order_number']['cer']:.2f}
+        """))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error in single test validation: {str(e)}")
+        raise
+
+# Run the test
+test_result = run_single_test()
+
+# %% [markdown]
 # ## Run Test Suite
 # 
 # Execute the test suite for Pixtral model.
