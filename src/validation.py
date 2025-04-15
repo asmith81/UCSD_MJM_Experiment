@@ -4,8 +4,9 @@ Result validation module.
 This module provides functionality for validating test results across different models.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, List
 import logging
+from pathlib import Path
 from .results_logging import evaluate_model_output
 from .data_utils import GroundTruthData
 
@@ -15,6 +16,55 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def validate_test_matrix(test_matrix: Dict[str, Any], supported_quant_levels: List[int], 
+                        available_prompt_types: List[str], data_dir: Path) -> bool:
+    """
+    Validate test matrix structure and content.
+    
+    Args:
+        test_matrix: Test matrix dictionary
+        supported_quant_levels: List of supported quantization levels
+        available_prompt_types: List of available prompt types
+        data_dir: Path to data directory
+        
+    Returns:
+        True if validation passes
+        
+    Raises:
+        ValueError: If validation fails
+    """
+    try:
+        # Check required fields
+        if 'test_cases' not in test_matrix:
+            raise ValueError("Test matrix must contain 'test_cases' array")
+            
+        # Validate each test case
+        for i, test_case in enumerate(test_matrix['test_cases']):
+            # Check required fields
+            required_fields = ['model_name', 'prompt_type', 'quant_level', 'image_path']
+            missing_fields = [field for field in required_fields if field not in test_case]
+            if missing_fields:
+                raise ValueError(f"Test case {i} missing required fields: {missing_fields}")
+                
+            # Validate quantization level
+            if test_case['quant_level'] not in supported_quant_levels:
+                raise ValueError(f"Test case {i} has invalid quantization level: {test_case['quant_level']}")
+                
+            # Validate prompt type
+            if test_case['prompt_type'] not in available_prompt_types:
+                raise ValueError(f"Test case {i} has invalid prompt type: {test_case['prompt_type']}")
+                
+            # Validate image path exists
+            image_path = data_dir / test_case['image_path']
+            if not image_path.exists():
+                raise ValueError(f"Test case {i} image path does not exist: {image_path}")
+                
+        return True
+        
+    except Exception as e:
+        logger.error(f"Error validating test matrix: {str(e)}")
+        raise
 
 def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
     """

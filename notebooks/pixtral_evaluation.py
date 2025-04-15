@@ -23,6 +23,7 @@ import subprocess
 from pathlib import Path
 import logging
 import json
+from typing import Dict, Any, List
 
 # Configure logging first
 logging.basicConfig(
@@ -74,8 +75,8 @@ from src.environment import setup_environment, download_model
 from src.config import load_yaml_config
 from src.models.pixtral import load_model, process_image_wrapper, download_pixtral_model
 from src.prompts import load_prompt_template
-from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output
-from src.validation import validate_results
+from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output, validate_ground_truth, normalize_total_cost
+from src.validation import validate_results, validate_test_matrix
 from src.data_utils import DataConfig, setup_data_paths
 
 # Setup environment
@@ -149,22 +150,12 @@ try:
         test_matrix = json.load(f)
         
     # Validate test matrix structure
-    if 'test_cases' not in test_matrix:
-        raise ValueError("Test matrix must contain 'test_cases' array")
-        
-    # Validate required fields
-    required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level', 'image_path']
-    for test_case in test_matrix['test_cases']:
-        missing_fields = [field for field in required_fields if field not in test_case]
-        if missing_fields:
-            raise ValueError(f"Test case missing required fields: {missing_fields}")
-            
-    # Validate quantization values
-    valid_quantization = [4, 8, 16, 32]
-    invalid_quantization = [case['quant_level'] for case in test_matrix['test_cases'] 
-                          if case['quant_level'] not in valid_quantization]
-    if invalid_quantization:
-        raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
+    validate_test_matrix(
+        test_matrix=test_matrix,
+        supported_quant_levels=[4, 8, 16, 32],
+        available_prompt_types=['basic_extraction'],
+        data_dir=env['data_dir']
+    )
             
 except Exception as e:
     logger.error(f"Error validating test matrix: {str(e)}")

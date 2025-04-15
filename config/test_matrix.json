@@ -2,423 +2,1683 @@
     "test_cases": [
         {
             "model_name": "pixtral",
-            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
             "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
             "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "pixtral",
             "prompt_type": "basic_extraction",
             "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
             "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
             "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "pixtral",
             "prompt_type": "basic_extraction",
             "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
             "image_path": "data/images/1041.jpg"
         },
         {
             "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
             "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "pixtral",
             "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1041.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 4,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 8,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 16,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1041.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 4,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 8,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 16,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "detailed",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1041.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 4,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 8,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 16,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "few_shot",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1041.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
         },
         {
             "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 4,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 8,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 16,
-            "image_path": "data/images/1041.jpg"
-        },
-        {
-            "model_name": "pixtral",
-            "field_type": "both",
-            "prompt_type": "locational",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
             "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "pixtral",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
             "image_path": "data/images/1039.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "both",
             "prompt_type": "basic_extraction",
-            "quant_level": 8,
+            "quant_level": 4,
+            "field_type": "both",
             "image_path": "data/images/1040.jpg"
         },
         {
             "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "basic_extraction",
-            "quant_level": 16,
-            "image_path": "data/images/1030.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "basic_extraction",
-            "quant_level": 32,
-            "image_path": "data/images/1030.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 4,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 8,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 16,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 32,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 4,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 8,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 16,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 32,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 4,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 8,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 16,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 32,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 4,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 8,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 16,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "llama_vision",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 32,
-            "image_path": "data/images/1039.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
             "prompt_type": "basic_extraction",
             "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
             "image_path": "data/images/1029.jpg"
         },
         {
-            "model_name": "doctr",
-            "field_type": "both",
+            "model_name": "llama_vision",
             "prompt_type": "basic_extraction",
             "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "llama_vision",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
             "image_path": "data/images/1027.jpg"
         },
         {
             "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
             "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 4,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 8,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "doctr",
             "prompt_type": "basic_extraction",
             "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
             "image_path": "data/images/1029.jpg"
         },
         {
             "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
             "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 16,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
+        },
+        {
+            "model_name": "doctr",
             "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1029.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1017.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 4,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 8,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
-            "quant_level": 16,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "step_by_step",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1029.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1018.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 4,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 8,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "detailed",
-            "quant_level": 16,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "detailed",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1029.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1019.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 4,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 8,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "few_shot",
-            "quant_level": 16,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "few_shot",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
-            "image_path": "data/images/1029.jpg"
+            "field_type": "both",
+            "image_path": "data/images/1020.jpg"
         },
         {
             "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 4,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 8,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "locational",
-            "quant_level": 16,
-            "image_path": "data/images/1029.jpg"
-        },
-        {
-            "model_name": "doctr",
-            "field_type": "both",
-            "prompt_type": "locational",
+            "prompt_type": "basic_extraction",
             "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1021.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1022.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1023.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1025.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1026.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1027.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1028.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
             "image_path": "data/images/1029.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1030.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1031.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1038.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1039.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1040.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1041.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1042.jpg"
+        },
+        {
+            "model_name": "doctr",
+            "prompt_type": "basic_extraction",
+            "quant_level": 32,
+            "field_type": "both",
+            "image_path": "data/images/1043.jpg"
         }
     ]
 } 

@@ -51,13 +51,13 @@ class ModelOutput(TypedDict):
 
 class ModelResponse(TypedDict):
     """Structure for model response data."""
+    raw_text: str
     work_order_number: ModelOutput
     total_cost: ModelOutput
     processing_time: float
 
 class EvaluationResult(TypedDict):
     """Structure for evaluation results."""
-    raw_string_match: bool
     normalized_match: bool
     cer: float
     error_category: str
@@ -73,6 +73,40 @@ class ResultStructure(TypedDict):
     meta: Dict[str, str]
     test_parameters: Dict[str, Any]
     results_by_image: Dict[str, ResultEntry]
+
+def validate_ground_truth(ground_truth: Dict[str, Any]) -> bool:
+    """
+    Validate ground truth data structure.
+    
+    Args:
+        ground_truth: Ground truth data to validate
+        
+    Returns:
+        True if structure is valid
+        
+    Raises:
+        ValueError: If structure is invalid
+    """
+    required_fields = ['work_order_number', 'total_cost']
+    for field in required_fields:
+        if field not in ground_truth:
+            raise ValueError(f"Missing required ground truth field: {field}")
+    return True
+
+def normalize_total_cost(value: Union[str, float]) -> float:
+    """
+    Normalize total cost value to float.
+    
+    Args:
+        value: Value to normalize (string or float)
+        
+    Returns:
+        Normalized float value
+    """
+    if isinstance(value, str):
+        # Remove currency symbols and whitespace
+        value = ''.join(c for c in value if c.isdigit() or c == '.')
+    return float(value)
 
 def calculate_cer(pred: str, true: str) -> float:
     """
