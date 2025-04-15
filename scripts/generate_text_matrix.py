@@ -17,8 +17,8 @@ for model in models:
         for prompt_type in prompt_types:
             for image_number in image_numbers:
                 test_case = {
-                    "model_name": model,
-                    "quant_level": quant_level,
+                    "model": model,
+                    "quantization_level": quant_level,
                     "prompt_type": prompt_type,
                     "image_number": image_number,
                     "field_type": "both",
