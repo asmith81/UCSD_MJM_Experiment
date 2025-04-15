@@ -258,10 +258,12 @@ class PixtralModel:
             # Load and preprocess images
             images = []
             for path in image_paths:
-                # Convert path to absolute path if it's relative
+                # Convert path to absolute path relative to workspace root
                 path = Path(path)
                 if not path.is_absolute():
-                    path = Path.cwd() / path
+                    # Get workspace root (parent of src directory)
+                    workspace_root = Path(__file__).parent.parent.parent
+                    path = workspace_root / path
                 
                 # Load and preprocess image
                 image = Image.open(path)
