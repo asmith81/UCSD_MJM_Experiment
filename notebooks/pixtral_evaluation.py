@@ -526,7 +526,6 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                 result_path=result_path,
                 results=results,
                 model_name=MODEL_NAME,
-                prompt_type="all",  # Use "all" since we're combining all prompt types
                 quant_level=quant_level
             )
             print(f"\n✓ All results logged to: {result_path}")
