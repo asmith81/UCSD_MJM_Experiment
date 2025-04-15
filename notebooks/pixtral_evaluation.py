@@ -429,11 +429,15 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                         'total_cost': image_ground_truth['Total']
                     }
                     
-                    # Process single image
+                    # Process single image - ensure path is relative to data_dir
+                    image_path = Path(case['image_path'])
+                    if not image_path.is_absolute():
+                        image_path = env['data_dir'] / image_path
+                    
                     result = process_image_wrapper(
                         model=model,
                         prompt_template=prompt_template,
-                        image_path=str(case['image_path']),
+                        image_path=str(image_path),
                         field_type=field_type,
                         config=data_config
                     )

@@ -17,10 +17,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def validate_test_matrix(test_matrix: Dict[str, Any], supported_quant_levels: List[int], 
-                        available_prompt_types: List[str], data_dir: Path) -> bool:
-    """
-    Validate test matrix structure and content.
+def validate_test_matrix(
+    test_matrix: dict,
+    supported_quant_levels: List[int],
+    available_prompt_types: List[str],
+    data_dir: Path
+) -> None:
+    """Validate test matrix structure and content.
     
     Args:
         test_matrix: Test matrix dictionary
@@ -28,47 +31,37 @@ def validate_test_matrix(test_matrix: Dict[str, Any], supported_quant_levels: Li
         available_prompt_types: List of available prompt types
         data_dir: Path to data directory
         
-    Returns:
-        True if validation passes
-        
     Raises:
-        ValueError: If validation fails
+        ValueError: If test matrix is invalid
     """
-    try:
-        # Check required fields
-        if 'test_cases' not in test_matrix:
-            raise ValueError("Test matrix must contain 'test_cases' array")
-            
-        # Validate each test case
-        for i, test_case in enumerate(test_matrix['test_cases']):
-            # Check required fields
-            required_fields = ['model_name', 'prompt_type', 'quant_level', 'image_path']
-            missing_fields = [field for field in required_fields if field not in test_case]
-            if missing_fields:
-                raise ValueError(f"Test case {i} missing required fields: {missing_fields}")
-                
-            # Validate quantization level
-            if test_case['quant_level'] not in supported_quant_levels:
-                raise ValueError(f"Test case {i} has invalid quantization level: {test_case['quant_level']}")
-                
-            # Validate prompt type
-            if test_case['prompt_type'] not in available_prompt_types:
-                raise ValueError(f"Test case {i} has invalid prompt type: {test_case['prompt_type']}")
-                
-            # Validate image path exists
-            # Strip leading 'data/' from the path if it exists
-            image_path = test_case['image_path']
-            if image_path.startswith('data/'):
-                image_path = image_path[5:]  # Remove 'data/' prefix
-            image_path = data_dir / image_path
-            if not image_path.exists():
-                raise ValueError(f"Test case {i} image path does not exist: {image_path}")
-                
-        return True
+    if not isinstance(test_matrix, dict):
+        raise ValueError("Test matrix must be a dictionary")
         
-    except Exception as e:
-        logger.error(f"Error validating test matrix: {str(e)}")
-        raise
+    if 'test_cases' not in test_matrix:
+        raise ValueError("Test matrix must contain 'test_cases' key")
+        
+    for case in test_matrix['test_cases']:
+        # Validate required fields
+        required_fields = ['model_name', 'quant_level', 'prompt_type', 'image_number', 'field_type', 'image_path']
+        missing_fields = [field for field in required_fields if field not in case]
+        if missing_fields:
+            raise ValueError(f"Test case missing required fields: {missing_fields}")
+            
+        # Validate quantization level
+        if case['quant_level'] not in supported_quant_levels:
+            raise ValueError(f"Unsupported quantization level: {case['quant_level']}")
+            
+        # Validate prompt type
+        if case['prompt_type'] not in available_prompt_types:
+            raise ValueError(f"Unsupported prompt type: {case['prompt_type']}")
+            
+        # Validate image path exists
+        image_path = Path(case['image_path'])
+        if not image_path.is_absolute():
+            image_path = data_dir / image_path
+            
+        if not image_path.exists():
+            raise ValueError(f"Image path does not exist: {image_path}")
 
 def validate_results(result: Dict[str, Any]) -> Dict[str, Any]:
     """
