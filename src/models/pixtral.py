@@ -437,7 +437,7 @@ def process_image_wrapper(
     """
     # Get model response
     response = model.process_image(
-        image_path=image_path,
+        image_paths=image_path,
         prompt=prompt_template,
         field_type=field_type,
         config=config
