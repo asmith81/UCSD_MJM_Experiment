@@ -294,10 +294,9 @@ class PixtralModel:
             
             # Optimize input tensor conversion
             if self.quantization in [4, 8, 16]:
-                # Only convert pixel_values to half precision
-                # Keep input_ids as long type for embedding layer
+                # Convert all tensors to bfloat16 for consistency
                 if 'pixel_values' in inputs:
-                    inputs['pixel_values'] = inputs['pixel_values'].half()
+                    inputs['pixel_values'] = inputs['pixel_values'].to(torch.bfloat16)
                 # Keep attention mask as boolean
                 if 'attention_mask' in inputs:
                     inputs['attention_mask'] = inputs['attention_mask'].bool()
