@@ -266,9 +266,15 @@ class PixtralModel:
                 # Convert path to Path object
                 path = Path(path)
                 
-                # If path is relative, join with image directory from config
+                # If path is relative, check if it already includes data/images/
                 if not path.is_absolute():
-                    path = config.image_dir / path
+                    path_str = str(path)
+                    if path_str.startswith('data/images/'):
+                        # If it already has data/images/, use it as is
+                        path = Path(path_str)
+                    else:
+                        # Otherwise, join with image directory
+                        path = config.image_dir / path
                 
                 # Load and preprocess image
                 image = Image.open(path)
