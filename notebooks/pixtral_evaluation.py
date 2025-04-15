@@ -163,7 +163,7 @@ try:
     validate_test_matrix(
         test_matrix=test_matrix,
         supported_quant_levels=[4, 8, 16, 32],
-        available_prompt_types=['basic_extraction'],
+        available_prompt_types=['basic_extraction', 'detailed', 'few_shot', 'locational', 'step_by_step'],
         data_dir=env['data_dir']
     )
             
