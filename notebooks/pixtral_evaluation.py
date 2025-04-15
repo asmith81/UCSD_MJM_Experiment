@@ -65,6 +65,16 @@ try:
         "--index-url", "https://download.pytorch.org/whl/cu118"
     ])
     print("PyTorch dependencies installed successfully.")
+    
+    # Install Flash Attention 2
+    print("Installing Flash Attention 2...")
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install",
+        "flash-attn==2.5.0",
+        "--no-build-isolation"
+    ])
+    print("Flash Attention 2 installed successfully.")
+    
 except subprocess.CalledProcessError as e:
     logger.error(f"Error installing dependencies: {e}")
     raise

@@ -181,7 +181,6 @@ class PixtralModel:
                     device_map="cuda:0",  # Explicit GPU mapping
                     low_cpu_mem_usage=True,
                     torch_dtype=default_dtype,
-                    use_flash_attention_2=True,  # Enable flash attention
                     attn_implementation="flash_attention_2"  # Use flash attention
                 )
             elif self.quantization == 16:
@@ -190,7 +189,6 @@ class PixtralModel:
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
                     torch_dtype=default_dtype,
-                    use_flash_attention_2=True,
                     attn_implementation="flash_attention_2"
                 )
             elif self.quantization == 8:
@@ -205,7 +203,6 @@ class PixtralModel:
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config,
-                    use_flash_attention_2=True,
                     attn_implementation="flash_attention_2"
                 )
             elif self.quantization == 4:
@@ -220,7 +217,6 @@ class PixtralModel:
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config,
-                    use_flash_attention_2=True,
                     attn_implementation="flash_attention_2"
                 )
             else:
