@@ -22,7 +22,7 @@ for model in models:
                     "prompt_type": prompt_type,
                     "image_number": image_number,
                     "field_type": "both",
-                    "image_path": f"{image_number}.jpg"
+                    "image_path": f"data/images/{image_number}.jpg"
                 }
                 test_cases.append(test_case)
 
