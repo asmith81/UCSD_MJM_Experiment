@@ -359,6 +359,10 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     Returns:
         List of test results
     """
+    # Load ground truth data
+    ground_truth_df = pd.read_csv(env['data_dir'] / 'ground_truth.csv')
+    ground_truth_df['Invoice'] = ground_truth_df['Invoice'].astype(str)
+    
     # Filter test cases for this quantization level and model
     quant_test_cases = [
         case for case in test_matrix['test_cases']
@@ -404,6 +408,22 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             for i, case in enumerate(cases):
                 print(f"\nProcessing case {i + 1}/{len(cases)}")
                 
+                # Get image ID from path
+                image_id = Path(case['image_path']).stem
+                
+                # Get ground truth for this image
+                image_ground_truth = ground_truth_df[ground_truth_df['Invoice'] == image_id].iloc[0]
+                ground_truth = {
+                    'work_order_number': {
+                        'raw_value': str(image_ground_truth['Work Order Number/Numero de Orden']),
+                        'normalized_value': normalize_work_order(str(image_ground_truth['Work Order Number/Numero de Orden']))
+                    },
+                    'total_cost': {
+                        'raw_value': str(image_ground_truth['Total']),
+                        'normalized_value': normalize_total_cost(str(image_ground_truth['Total']))
+                    }
+                }
+                
                 # Track execution start
                 track_execution(
                     EXECUTION_LOG_PATH,
@@ -423,9 +443,6 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                         config=data_config
                     )
                     
-                    # Get ground truth
-                    ground_truth = case.get('ground_truth', {})
-                    
                     # Evaluate results
                     evaluation = evaluate_model_output(
                         result['model_response']['output'],
@@ -439,22 +456,16 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                     # Validate results
                     validated_result = validate_results(result)
                     
-                    # Log result for this test case
-                    if validated_result:
-                        # Convert image path to Path object to get stem
-                        image_path = Path(case['image_path'])
-                        result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{case['prompt_type']}_{image_path.stem}.json"
-                        log_result(
-                            result_path=result_path,
-                            image_id=image_path.stem,
-                            model_output=validated_result['model_response'],
-                            ground_truth=ground_truth,
-                            processing_time=validated_result['model_response'].get('processing_time', 0.0),
-                            model_name=MODEL_NAME,
-                            prompt_type=case['prompt_type'],
-                            quant_level=quant_level
-                        )
-                        print(f"✓ Results logged to: {result_path}")
+                    # Add test parameters to result
+                    validated_result['test_parameters'] = {
+                        'model': MODEL_NAME,
+                        'quantization': quant_level,
+                        'prompt_strategy': prompt_template,
+                        'image_path': str(case['image_path'])
+                    }
+                    
+                    # Add ground truth to result
+                    validated_result['ground_truth'] = ground_truth
                     
                     results.append(validated_result)
                     print(f"✓ Completed test case {i + 1}/{len(cases)}")
@@ -481,18 +492,17 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                     )
                     raise
         
-        # Log overall results for this quantization level
+        # Log all results for this quantization level
         if results:
-            summary_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_summary.json"
-            with open(summary_path, 'w') as f:
-                json.dump({
-                    'quantization_level': quant_level,
-                    'total_tests': len(results),
-                    'successful_tests': len([r for r in results if 'error' not in r]),
-                    'failed_tests': len([r for r in results if 'error' in r]),
-                    'results': results
-                }, f, indent=2)
-            print(f"\n✓ Summary logged to: {summary_path}")
+            result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_results.json"
+            log_quantization_results(
+                result_path=result_path,
+                results=results,
+                model_name=MODEL_NAME,
+                prompt_type=prompt_type,
+                quant_level=quant_level
+            )
+            print(f"\n✓ All results logged to: {result_path}")
         
         return results
         

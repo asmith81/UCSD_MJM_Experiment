@@ -506,4 +506,140 @@ def load_result(
         
     except Exception as e:
         logger.error(f"Error loading result from {result_path}: {str(e)}")
+        raise
+
+def concatenate_results(
+    logs_dir: Union[str, Path],
+    model_name: str,
+    quant_level: Optional[int] = None,
+    storage: Optional[ResultStorage] = None
+) -> Dict[str, Any]:
+    """
+    Concatenate results from multiple files into a single organized structure.
+    If quant_level is provided, only concatenate results for that quantization level.
+    
+    Args:
+        logs_dir: Directory containing result files
+        model_name: Name of the model to concatenate results for
+        quant_level: Optional quantization level to filter by
+        storage: Optional result storage implementation
+        
+    Returns:
+        Dictionary containing concatenated results for the specified quantization level
+    """
+    try:
+        # Use provided storage or default
+        storage = storage or FileSystemStorage()
+        
+        # Convert to Path object
+        logs_dir = Path(logs_dir)
+        
+        # Find all result files for this model
+        if quant_level is not None:
+            result_files = list(logs_dir.glob(f"{model_name}_{quant_level}bit_*.json"))
+        else:
+            result_files = list(logs_dir.glob(f"{model_name}_*bit_*.json"))
+        
+        if not result_files:
+            logger.warning(f"No result files found for {model_name} with quantization {quant_level or 'any'}")
+            return None
+            
+        # Initialize result structure
+        concatenated_results = {
+            "meta": {
+                "model_name": model_name,
+                "quantization_level": quant_level,
+                "timestamp": datetime.now().isoformat(),
+                "total_files": len(result_files)
+            },
+            "results": []
+        }
+        
+        # Process each result file
+        for result_file in result_files:
+            try:
+                # Load result
+                result = storage.load_result(result_file)
+                
+                # Add result to list
+                concatenated_results["results"].append(result)
+                
+            except Exception as e:
+                logger.error(f"Error processing result file {result_file}: {str(e)}")
+                continue
+        
+        return concatenated_results
+        
+    except Exception as e:
+        logger.error(f"Error concatenating results: {str(e)}")
+        raise
+
+def log_quantization_results(
+    result_path: Union[str, Path],
+    results: List[Dict[str, Any]],
+    model_name: str,
+    prompt_type: str,
+    quant_level: int,
+    environment: Optional[str] = None,
+    storage: Optional[ResultStorage] = None
+) -> None:
+    """
+    Log all results for a quantization level to a single file.
+    
+    Args:
+        result_path: Path to result file
+        results: List of result dictionaries
+        model_name: Name of the model being tested
+        prompt_type: Type of prompt used
+        quant_level: Quantization level used
+        environment: Optional testing environment description
+        storage: Optional result storage implementation
+    """
+    try:
+        # Use provided storage or default
+        storage = storage or FileSystemStorage()
+        
+        # Create base result structure
+        result = {
+            "meta": {
+                "experiment_id": f"exp-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
+                "timestamp": datetime.now().isoformat(),
+                "environment": environment or "RunPod T4 GPU"
+            },
+            "test_parameters": {
+                "model_name": model_name,
+                "field_type": "both",
+                "prompt_type": prompt_type,
+                "quant_level": quant_level
+            },
+            "results_by_image": {}
+        }
+        
+        # Add all results
+        for r in results:
+            if 'error' not in r:
+                image_id = Path(r['test_parameters']['image_path']).stem
+                result['results_by_image'][image_id] = {
+                    "ground_truth": r.get('ground_truth', {}),
+                    "model_response": {
+                        "work_order_number": {
+                            "raw_text": r['model_response']['output'],
+                            "parsed_value": r['model_response'].get('work_order_number', ''),
+                            "normalized_value": normalize_work_order(r['model_response'].get('work_order_number', ''))
+                        },
+                        "total_cost": {
+                            "raw_text": r['model_response']['output'],
+                            "parsed_value": r['model_response'].get('total_cost', ''),
+                            "normalized_value": normalize_total_cost(r['model_response'].get('total_cost', ''))
+                        },
+                        "processing_time": r['model_response'].get('processing_time', 0.0)
+                    },
+                    "evaluation": r['evaluation']
+                }
+        
+        # Save consolidated result
+        storage.save_result(result_path, result)
+        
+    except Exception as e:
+        logger.error(f"Error logging quantization results: {str(e)}")
         raise 
