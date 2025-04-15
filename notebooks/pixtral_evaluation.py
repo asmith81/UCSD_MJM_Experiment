@@ -157,47 +157,36 @@ try:
         test_matrix = json.load(f)
         
     # Validate test matrix structure
-    validate_test_matrix(
-        test_matrix=test_matrix,
-        supported_quant_levels=[4, 8, 16, 32],
-        available_prompt_types=['basic_extraction'],
-        data_dir=env['data_dir']
-    )
+    if 'test_cases' not in test_matrix:
+        raise ValueError("Test matrix must contain 'test_cases' array")
+        
+    # Validate required fields
+    required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level', 'image_path']
+    for test_case in test_matrix['test_cases']:
+        missing_fields = [field for field in required_fields if field not in test_case]
+        if missing_fields:
+            raise ValueError(f"Test case missing required fields: {missing_fields}")
+            
+    # Validate quantization values
+    valid_quantization = [4, 8, 16, 32]
+    invalid_quantization = [case['quant_level'] for case in test_matrix['test_cases'] 
+                          if case['quant_level'] not in valid_quantization]
+    if invalid_quantization:
+        raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
             
 except Exception as e:
     logger.error(f"Error validating test matrix: {str(e)}")
     raise
 
-# Load model configuration
-try:
-    # The config is already loaded and validated with required sections
-    # We can use the config directly as it matches our needs
-    model_config = {
-        'name': config['name'],
-        'path': config['repo_id'],
-        'quantization_levels': list(config['quantization']['options'].keys())
-    }
-    
-    prompt_config = {
-        'format': config['prompt']['format'],
-        'image_placeholder': config['prompt']['image_placeholder'],
-        'default_field': config['prompt']['default_field']
-    }
-    
-    # Validate model configuration
-    required_model_fields = ['name', 'path', 'quantization_levels']
-    missing_fields = [field for field in required_model_fields if field not in model_config]
-    if missing_fields:
-        raise ValueError(f"Model configuration missing required fields: {missing_fields}")
-        
-except KeyError as e:
-    logger.error(f"Missing required configuration section: {e}")
-    raise
-except Exception as e:
-    logger.error(f"Error loading model configuration: {str(e)}")
-    raise
+# %% [markdown]
+# ## Model Configuration
+# 
+# Set the model name and test matrix path.
 
-print(f"✓ Model configuration loaded successfully for {MODEL_NAME}")
+# %%
+# Load model configuration
+model_config = config['model']
+prompt_config = config['prompts']
 
 # %% [markdown]
 # ## Model Download
