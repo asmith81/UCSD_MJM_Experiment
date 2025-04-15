@@ -422,10 +422,12 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                 
                 # Log result for this test case
                 if result:
-                    result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{test_case['prompt_type']}_{test_case['image_path'].stem}.json"
+                    # Convert image path to Path object to get stem
+                    image_path = Path(test_case['image_path'])
+                    result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{test_case['prompt_type']}_{image_path.stem}.json"
                     log_result(
                         result_path=result_path,
-                        image_id=test_case['image_path'].stem,
+                        image_id=image_path.stem,
                         model_output=result[0]['model_response'],
                         ground_truth=test_case.get('ground_truth', {}),
                         processing_time=result[0]['model_response'].get('processing_time', 0.0),
