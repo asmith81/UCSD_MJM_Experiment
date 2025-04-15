@@ -368,6 +368,8 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
         logger.warning(f"No test cases found for {MODEL_NAME} at {quant_level}-bit quantization")
         return []
     
+    print(f"\nRunning {len(quant_test_cases)} test cases for {quant_level}-bit quantization...")
+    
     # Create temporary test matrix file
     import tempfile
     import os
@@ -378,29 +380,37 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     
     try:
         # Run test suite for this quantization level
-        results = execution.run_test_suite(
-            model_name=MODEL_NAME,
-            test_matrix_path=temp_path,
-            model_loader=lambda name, quant: load_model(
-                model_name=name,
-                quantization=quant,
-                models_dir=env['models_dir'],
-                config=config
-            ),
-            processor=lambda model, prompt, test_case: process_image_wrapper(
-                model=model,
-                prompt_template=prompt,
-                image_path=test_case['image_path'],
-                field_type=test_case['field_type'],
-                config=data_config
-            ),
-            prompt_loader=lambda strategy: load_prompt_template(
-                prompt_strategy=strategy,
-                prompts_dir=ROOT_DIR / "config" / "prompts"
-            ),
-            result_validator=validate_results,
-            project_root=ROOT_DIR
-        )
+        results = []
+        for i, test_case in enumerate(quant_test_cases, 1):
+            print(f"\nTest case {i}/{len(quant_test_cases)}: {test_case['prompt_type']}")
+            print(f"Image: {test_case['image_path']}")
+            print(f"Field type: {test_case['field_type']}")
+            
+            result = execution.run_test_suite(
+                model_name=MODEL_NAME,
+                test_matrix_path=temp_path,
+                model_loader=lambda name, quant: load_model(
+                    model_name=name,
+                    quantization=quant,
+                    models_dir=env['models_dir'],
+                    config=config
+                ),
+                processor=lambda model, prompt, test_case: process_image_wrapper(
+                    model=model,
+                    prompt_template=prompt,
+                    image_path=test_case['image_path'],
+                    field_type=test_case['field_type'],
+                    config=data_config
+                ),
+                prompt_loader=lambda strategy: load_prompt_template(
+                    prompt_strategy=strategy,
+                    prompts_dir=ROOT_DIR / "config" / "prompts"
+                ),
+                result_validator=validate_results,
+                project_root=ROOT_DIR
+            )
+            results.extend(result)
+            print(f"✓ Completed test case {i}/{len(quant_test_cases)}")
         
         # Log results
         logger.info(f"Completed {len(results)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")

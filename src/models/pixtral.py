@@ -190,7 +190,8 @@ class PixtralModel:
                 quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
                     bnb_8bit_compute_dtype=default_dtype,
-                    bnb_8bit_use_double_quant=True
+                    bnb_8bit_use_double_quant=True,
+                    bnb_8bit_quant_type="fp8"  # Using fp8 for better accuracy
                 )
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
@@ -202,7 +203,7 @@ class PixtralModel:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=default_dtype,
-                    bnb_4bit_use_double_quant=True,
+                    bnb_4bit_use_double_quant=True,  # Added for better memory efficiency
                     bnb_4bit_quant_type="nf4"
                 )
                 self.model = LlavaForConditionalGeneration.from_pretrained(
@@ -267,6 +268,16 @@ class PixtralModel:
                 return_dict=True,
                 return_tensors="pt"
             ).to(self.device)
+            
+            # Convert all input tensors to appropriate precision based on quantization
+            if self.quantization in [4, 8, 16]:
+                for key in inputs:
+                    if isinstance(inputs[key], torch.Tensor):
+                        # Convert to half precision
+                        inputs[key] = inputs[key].half()
+                        # Ensure attention mask is boolean type
+                        if key == 'attention_mask':
+                            inputs[key] = inputs[key].bool()
             
             # Run inference
             with torch.no_grad():
