@@ -575,69 +575,74 @@ def concatenate_results(
         raise
 
 def log_quantization_results(
-    result_path: Union[str, Path],
-    results: List[Dict[str, Any]],
+    result_path: str,
+    results: List[Dict],
     model_name: str,
-    prompt_type: str,
     quant_level: int,
     environment: Optional[str] = None,
     storage: Optional[ResultStorage] = None
 ) -> None:
-    """
-    Log all results for a quantization level to a single file.
+    """Log results for a quantization level, including results from all prompt types.
     
     Args:
-        result_path: Path to result file
+        result_path: Base path for saving results
         results: List of result dictionaries
         model_name: Name of the model being tested
-        prompt_type: Type of prompt used
-        quant_level: Quantization level used
-        environment: Optional testing environment description
-        storage: Optional result storage implementation
+        quant_level: Quantization level being tested
+        environment: Optional environment identifier
+        storage: Optional storage implementation
     """
     try:
-        # Use provided storage or default
-        storage = storage or FileSystemStorage()
-        
         # Create base result structure
         result = {
             "meta": {
-                "experiment_id": f"exp-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
                 "timestamp": datetime.now().isoformat(),
-                "environment": environment or "RunPod T4 GPU"
+                "environment": environment or "local",
+                "model": model_name,
+                "quantization_level": quant_level
             },
             "test_parameters": {
                 "model_name": model_name,
-                "field_type": "both",
-                "prompt_type": prompt_type,
-                "quant_level": quant_level
+                "quantization_level": quant_level
             },
-            "results_by_image": {}
+            "results_by_prompt": {}
         }
         
-        # Add all results
+        # Group results by prompt type first
         for r in results:
-            if 'error' not in r:
-                image_id = Path(r['test_parameters']['image_path']).stem
-                result['results_by_image'][image_id] = {
-                    "ground_truth": r.get('ground_truth', {}),
-                    "model_response": {
-                        "work_order_number": {
-                            "raw_text": r['model_response']['output'],
-                            "parsed_value": r['model_response'].get('work_order_number', ''),
-                            "normalized_value": normalize_work_order(r['model_response'].get('work_order_number', ''))
-                        },
-                        "total_cost": {
-                            "raw_text": r['model_response']['output'],
-                            "parsed_value": r['model_response'].get('total_cost', ''),
-                            "normalized_value": normalize_total_cost(r['model_response'].get('total_cost', ''))
-                        },
-                        "processing_time": r['model_response'].get('processing_time', 0.0)
-                    },
-                    "evaluation": r['evaluation']
+            if r.get("error"):
+                continue
+                
+            prompt_type = r["test_parameters"]["prompt_type"]
+            image_id = r["test_parameters"]["image_path"].split("/")[-1]
+            
+            if prompt_type not in result["results_by_prompt"]:
+                result["results_by_prompt"][prompt_type] = {
+                    "results_by_image": {}
                 }
+            
+            result["results_by_prompt"][prompt_type]["results_by_image"][image_id] = {
+                "image_path": r["test_parameters"]["image_path"],
+                "model_response": {
+                    "work_order_number": {
+                        "raw_text": r["model_response"]["work_order_number"]["raw_text"],
+                        "parsed_value": r["model_response"]["work_order_number"]["parsed_value"],
+                        "normalized_value": r["model_response"]["work_order_number"]["normalized_value"]
+                    },
+                    "total_cost": {
+                        "raw_text": r["model_response"]["total_cost"]["raw_text"],
+                        "parsed_value": r["model_response"]["total_cost"]["parsed_value"],
+                        "normalized_value": r["model_response"]["total_cost"]["normalized_value"]
+                    }
+                },
+                "evaluation": {
+                    "work_order_number": r["evaluation"]["work_order_number"],
+                    "total_cost": r["evaluation"]["total_cost"]
+                }
+            }
         
-        # Save consolidated result
+        # Save using specified storage or default to file system
+        storage = storage or FileSystemStorage()
         storage.save_result(result_path, result)
         
     except Exception as e:

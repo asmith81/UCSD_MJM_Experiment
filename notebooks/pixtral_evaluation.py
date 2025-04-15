@@ -359,10 +359,6 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     Returns:
         List of test results
     """
-    # Load ground truth data
-    ground_truth_df = pd.read_csv(env['data_dir'] / 'ground_truth.csv')
-    ground_truth_df['Invoice'] = ground_truth_df['Invoice'].astype(str)
-    
     # Filter test cases for this quantization level and model
     quant_test_cases = [
         case for case in test_matrix['test_cases']
@@ -376,6 +372,19 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     print(f"\nRunning {len(quant_test_cases)} test cases for {quant_level}-bit quantization...")
     
     try:
+        # Load ground truth data
+        ground_truth_path = env['data_dir'] / 'ground_truth.csv'
+        if not ground_truth_path.exists():
+            raise FileNotFoundError(f"Ground truth file not found: {ground_truth_path}")
+            
+        ground_truth_df = pd.read_csv(ground_truth_path)
+        
+        # Validate required columns
+        required_columns = ['Invoice', 'Work Order Number/Numero de Orden', 'Total']
+        missing_columns = [col for col in required_columns if col not in ground_truth_df.columns]
+        if missing_columns:
+            raise ValueError(f"Ground truth CSV missing required columns: {missing_columns}")
+        
         # Load model once for all test cases
         logger.info(f"Loading model {MODEL_NAME} with quantization {quant_level}")
         model = load_model(
@@ -408,22 +417,6 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             for i, case in enumerate(cases):
                 print(f"\nProcessing case {i + 1}/{len(cases)}")
                 
-                # Get image ID from path
-                image_id = Path(case['image_path']).stem
-                
-                # Get ground truth for this image
-                image_ground_truth = ground_truth_df[ground_truth_df['Invoice'] == image_id].iloc[0]
-                ground_truth = {
-                    'work_order_number': {
-                        'raw_value': str(image_ground_truth['Work Order Number/Numero de Orden']),
-                        'normalized_value': normalize_work_order(str(image_ground_truth['Work Order Number/Numero de Orden']))
-                    },
-                    'total_cost': {
-                        'raw_value': str(image_ground_truth['Total']),
-                        'normalized_value': normalize_total_cost(str(image_ground_truth['Total']))
-                    }
-                }
-                
                 # Track execution start
                 track_execution(
                     EXECUTION_LOG_PATH,
@@ -434,6 +427,16 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                 )
                 
                 try:
+                    # Get image ID from path
+                    image_id = Path(case['image_path']).stem
+                    
+                    # Get ground truth for this image
+                    image_ground_truth = ground_truth_df[ground_truth_df['Invoice'] == int(image_id)].iloc[0]
+                    ground_truth = {
+                        'work_order_number': image_ground_truth['Work Order Number/Numero de Orden'],
+                        'total_cost': image_ground_truth['Total']
+                    }
+                    
                     # Process single image
                     result = process_image_wrapper(
                         model=model,
@@ -456,15 +459,13 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                     # Validate results
                     validated_result = validate_results(result)
                     
-                    # Add test parameters to result
+                    # Add test parameters and ground truth to result
                     validated_result['test_parameters'] = {
                         'model': MODEL_NAME,
                         'quantization': quant_level,
                         'prompt_strategy': prompt_template,
                         'image_path': str(case['image_path'])
                     }
-                    
-                    # Add ground truth to result
                     validated_result['ground_truth'] = ground_truth
                     
                     results.append(validated_result)
@@ -492,14 +493,14 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                     )
                     raise
         
-        # Log all results for this quantization level
+        # Log all results for this quantization level in a single file
         if results:
             result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_results.json"
             log_quantization_results(
                 result_path=result_path,
                 results=results,
                 model_name=MODEL_NAME,
-                prompt_type=prompt_type,
+                prompt_type="all",  # Use "all" since we're combining all prompt types
                 quant_level=quant_level
             )
             print(f"\n✓ All results logged to: {result_path}")
