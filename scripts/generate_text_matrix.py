@@ -8,51 +8,46 @@ prompt_types = ["basic_extraction", "detailed", "few_shot", "locational", "step_
 image_numbers = [1017, 1018, 1019, 1020, 1021, 1022, 1023, 1025, 1026, 1027, 
                 1028, 1029, 1030, 1031, 1038, 1039, 1040, 1041, 1042, 1043]
 
-# Create the JSON object
-config = {}
+# Create the test cases array
+test_cases = []
 
-# Iterate through the combinations
+# Iterate through all combinations
 for model in models:
-    config[model] = {}
-    
     for quant_level in quant_levels:
-        config[model][quant_level] = {}
-        
         for prompt_type in prompt_types:
-            config[model][quant_level][prompt_type] = {}
-            
             for image_number in image_numbers:
-                image_path = f"UCSD_MJM_Experiment/data/images/{image_number}.jpg"
-                
-                config[model][quant_level][prompt_type][str(image_number)] = {
+                test_case = {
+                    "model": model,
+                    "quantization_level": quant_level,
+                    "prompt_type": prompt_type,
+                    "image_number": image_number,
                     "field_type": "both",
-                    "image_path": image_path
+                    "image_path": f"UCSD_MJM_Experiment/data/images/{image_number}.jpg"
                 }
+                test_cases.append(test_case)
+
+# Create the final test matrix structure
+test_matrix = {
+    "test_cases": test_cases
+}
 
 # Calculate total entries
-total_entries = len(models) * len(quant_levels) * len(prompt_types) * len(image_numbers)
-print(f"Total entries: {total_entries}")
+total_entries = len(test_cases)
+print(f"Total test cases: {total_entries}")
 
 # Get the current directory path
 current_dir = os.path.dirname(os.path.abspath(__file__))
-output_file = os.path.join(current_dir, 'config.json')
+output_file = os.path.join(current_dir, 'config', 'test_matrix.json')
+
+# Ensure the config directory exists
+os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
 # Save to a JSON file
 with open(output_file, 'w') as f:
-    json.dump(config, f, indent=2)
+    json.dump(test_matrix, f, indent=2)
 
-print(f"Configuration file '{output_file}' has been created with {total_entries} entries.")
-
-# Verify the structure by checking a sample entry
-sample = config["pixtral"][4]["basic_extraction"]["1017"]
-print(f"Sample entry: {sample}")
-
-# Save to a JSON file
-with open('experiment_config.json', 'w') as f:
-    json.dump(config, f, indent=2)
-
-print(f"Configuration file 'experiment_config.json' has been created with {total_entries} entries.")
+print(f"Test matrix file '{output_file}' has been created with {total_entries} test cases.")
 
 # Verify the structure by checking a sample entry
-sample = config["pixtral"][4]["basic_extraction"]["1017"]
-print(f"Sample entry: {sample}")
+sample = test_cases[0]
+print(f"Sample test case: {sample}")
