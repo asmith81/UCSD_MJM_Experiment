@@ -248,19 +248,16 @@ class PixtralModel:
         try:
             start_time = time.time()
             
-            # Preprocess image
-            image = preprocess_image(Path(image_path), config)
-            
-            # Format chat-style input
+            # Format chat-style input with direct image path
             chat = [{
                 "role": "user",
                 "content": [
                     {"type": "text", "content": prompt},
-                    {"type": "image", "image": image}
+                    {"type": "image", "url": str(image_path)}
                 ]
             }]
             
-            # Apply chat template and process inputs
+            # Apply chat template and process inputs in one step
             inputs = self.processor.apply_chat_template(
                 chat,
                 add_generation_prompt=True,
@@ -279,16 +276,19 @@ class PixtralModel:
                         if key == 'attention_mask':
                             inputs[key] = inputs[key].bool()
             
-            # Run inference
+            # Run inference with optimized parameters
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=50,
+                    max_new_tokens=500,  # Using model card's recommended value
                     num_return_sequences=1,
-                    temperature=0.7,
-                    do_sample=True,
+                    temperature=0.3,  # Reduced from 0.7 for faster convergence
+                    do_sample=False,  # Disabled sampling for faster inference
                     pad_token_id=self.processor.tokenizer.pad_token_id,
-                    eos_token_id=self.processor.tokenizer.eos_token_id
+                    eos_token_id=self.processor.tokenizer.eos_token_id,
+                    use_cache=True,  # Enable KV cache
+                    early_stopping=True,  # Stop when EOS is generated
+                    repetition_penalty=1.1  # Slightly penalize repetition
                 )
                 
             # Decode output
