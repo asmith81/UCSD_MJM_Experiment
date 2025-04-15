@@ -199,8 +199,35 @@ except Exception as e:
 
 # %%
 # Load model configuration
-model_config = config['model']
-prompt_config = config['prompts']
+model_config = {
+    'name': config['name'],
+    'repo_id': config['repo_id'],
+    'model_type': config['model_type'],
+    'processor_type': config['processor_type'],
+    'loading': config['loading'],
+    'quantization': config['quantization']
+}
+
+prompt_config = {
+    'format': config['prompt']['format'],
+    'image_placeholder': config['prompt']['image_placeholder'],
+    'default_field': config['prompt']['default_field'],
+    'input_format': config['prompt']['input_format']
+}
+
+# Validate model configuration
+required_fields = ['name', 'repo_id', 'model_type', 'processor_type', 'loading', 'quantization']
+missing_fields = [field for field in required_fields if field not in model_config]
+if missing_fields:
+    raise ValueError(f"Model configuration missing required fields: {missing_fields}")
+
+# Validate prompt configuration
+required_prompt_fields = ['format', 'image_placeholder', 'default_field', 'input_format']
+missing_prompt_fields = [field for field in required_prompt_fields if field not in prompt_config]
+if missing_prompt_fields:
+    raise ValueError(f"Prompt configuration missing required fields: {missing_prompt_fields}")
+
+print(f"✓ Model configuration loaded successfully for {MODEL_NAME}")
 
 # %% [markdown]
 # ## Model Download
