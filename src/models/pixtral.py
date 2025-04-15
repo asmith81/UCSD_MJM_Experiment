@@ -263,12 +263,12 @@ class PixtralModel:
             # Load and preprocess images
             images = []
             for path in image_paths:
-                # Convert path to absolute path relative to workspace root
+                # Convert path to Path object
                 path = Path(path)
+                
+                # If path is relative, join with data directory from config
                 if not path.is_absolute():
-                    # Get workspace root (parent of src directory)
-                    workspace_root = Path(__file__).parent.parent.parent
-                    path = workspace_root / path
+                    path = config.data_dir / path
                 
                 # Load and preprocess image
                 image = Image.open(path)
