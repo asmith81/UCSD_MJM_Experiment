@@ -488,8 +488,8 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
                     # Add test parameters and ground truth to result
                     validated_result['test_parameters'] = {
                         'model': MODEL_NAME,
-                        'quantization': quant_level,
-                        'prompt_strategy': prompt_template,
+                        'quantization_level': quant_level,
+                        'prompt_type': case['prompt_type'],
                         'image_path': str(case['image_path'])
                     }
                     validated_result['ground_truth'] = ground_truth
