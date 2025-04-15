@@ -170,7 +170,7 @@ class PixtralModel:
             
             # Set default dtype based on quantization
             if self.quantization in [4, 8, 16]:
-                default_dtype = torch.float16
+                default_dtype = torch.bfloat16
             else:
                 default_dtype = torch.float32
             
@@ -187,7 +187,8 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    torch_dtype=default_dtype
+                    torch_dtype=default_dtype,
+                    use_flash_attention_2=True
                 )
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
@@ -200,7 +201,8 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config
+                    quantization_config=quantization_config,
+                    use_flash_attention_2=True
                 )
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
@@ -213,7 +215,8 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config
+                    quantization_config=quantization_config,
+                    use_flash_attention_2=True
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
@@ -291,9 +294,8 @@ class PixtralModel:
             
             # Optimize input tensor conversion
             if self.quantization in [4, 8, 16]:
-                # Only convert input_ids and pixel_values to half precision
-                if 'input_ids' in inputs:
-                    inputs['input_ids'] = inputs['input_ids'].half()
+                # Only convert pixel_values to half precision
+                # Keep input_ids as long type for embedding layer
                 if 'pixel_values' in inputs:
                     inputs['pixel_values'] = inputs['pixel_values'].half()
                 # Keep attention mask as boolean
