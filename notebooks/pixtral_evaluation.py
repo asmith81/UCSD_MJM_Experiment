@@ -22,11 +22,6 @@ import sys
 import subprocess
 from pathlib import Path
 import logging
-import json
-import pandas as pd
-from PIL import Image
-import matplotlib.pyplot as plt
-from IPython.display import display, Markdown
 
 # Configure logging first
 logging.basicConfig(
@@ -55,10 +50,11 @@ sys.path.append(str(ROOT_DIR))
 # Install dependencies
 print("Installing dependencies...")
 try:
+    # Install base requirements
     subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", str(ROOT_DIR / "requirements.txt")])
-    print("Dependencies installed successfully.")
+    print("Base dependencies installed successfully.")
     
-    # Install PyTorch dependencies separately
+    # Install PyTorch dependencies
     print("Installing PyTorch dependencies...")
     subprocess.check_call([
         sys.executable, "-m", "pip", "install",
@@ -78,9 +74,27 @@ try:
     ])
     print("Flash Attention 2 installed successfully.")
     
+    # Install additional dependencies
+    print("Installing additional dependencies...")
+    subprocess.check_call([
+        sys.executable, "-m", "pip", "install",
+        "pandas",
+        "Pillow",
+        "matplotlib",
+        "IPython"
+    ])
+    print("Additional dependencies installed successfully.")
+    
 except subprocess.CalledProcessError as e:
     logger.error(f"Error installing dependencies: {e}")
     raise
+
+# Now import all other required modules
+import json
+import pandas as pd
+from PIL import Image
+import matplotlib.pyplot as plt
+from IPython.display import display, Markdown
 
 # Import project modules
 from src import execution
