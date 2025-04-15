@@ -386,34 +386,93 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             print(f"Image: {test_case['image_path']}")
             print(f"Field type: {test_case['field_type']}")
             
-            result = execution.run_test_suite(
-                model_name=MODEL_NAME,
-                test_matrix_path=temp_path,
-                model_loader=lambda name, quant: load_model(
-                    model_name=name,
-                    quantization=quant,
-                    models_dir=env['models_dir'],
-                    config=config
-                ),
-                processor=lambda model, prompt, test_case: process_image_wrapper(
-                    model=model,
-                    prompt_template=prompt,
-                    image_path=test_case['image_path'],
-                    field_type=test_case['field_type'],
-                    config=data_config
-                ),
-                prompt_loader=lambda strategy: load_prompt_template(
-                    prompt_strategy=strategy,
-                    prompts_dir=ROOT_DIR / "config" / "prompts"
-                ),
-                result_validator=validate_results,
-                project_root=ROOT_DIR
+            # Track execution start for this test case
+            track_execution(
+                EXECUTION_LOG_PATH,
+                MODEL_NAME,
+                test_case['prompt_type'],
+                quant_level,
+                "started"
             )
-            results.extend(result)
-            print(f"✓ Completed test case {i}/{len(quant_test_cases)}")
+            
+            try:
+                result = execution.run_test_suite(
+                    model_name=MODEL_NAME,
+                    test_matrix_path=temp_path,
+                    model_loader=lambda name, quant: load_model(
+                        model_name=name,
+                        quantization=quant,
+                        models_dir=env['models_dir'],
+                        config=config
+                    ),
+                    processor=lambda model, prompt, test_case: process_image_wrapper(
+                        model=model,
+                        prompt_template=prompt,
+                        image_path=test_case['image_path'],
+                        field_type=test_case['field_type'],
+                        config=data_config
+                    ),
+                    prompt_loader=lambda strategy: load_prompt_template(
+                        prompt_strategy=strategy,
+                        prompts_dir=ROOT_DIR / "config" / "prompts"
+                    ),
+                    result_validator=validate_results,
+                    project_root=ROOT_DIR
+                )
+                
+                # Log result for this test case
+                if result:
+                    result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{test_case['prompt_type']}_{test_case['image_path'].stem}.json"
+                    log_result(
+                        result_path=result_path,
+                        image_id=test_case['image_path'].stem,
+                        model_output=result[0]['model_response'],
+                        ground_truth=test_case.get('ground_truth', {}),
+                        processing_time=result[0]['model_response'].get('processing_time', 0.0),
+                        model_name=MODEL_NAME,
+                        prompt_type=test_case['prompt_type'],
+                        quant_level=quant_level
+                    )
+                    print(f"✓ Results logged to: {result_path}")
+                
+                results.extend(result)
+                print(f"✓ Completed test case {i}/{len(quant_test_cases)}")
+                
+                # Track successful completion
+                track_execution(
+                    EXECUTION_LOG_PATH,
+                    MODEL_NAME,
+                    test_case['prompt_type'],
+                    quant_level,
+                    "completed"
+                )
+                
+            except Exception as e:
+                logger.error(f"Error in test case {test_case['prompt_type']}: {str(e)}")
+                # Track failure
+                track_execution(
+                    EXECUTION_LOG_PATH,
+                    MODEL_NAME,
+                    test_case['prompt_type'],
+                    quant_level,
+                    "failed",
+                    str(e)
+                )
+                raise
         
-        # Log results
-        logger.info(f"Completed {len(results)} test cases for {MODEL_NAME} at {quant_level}-bit quantization")
+        # Log overall results for this quantization level
+        if results:
+            summary_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_summary.json"
+            with open(summary_path, 'w') as f:
+                json.dump({
+                    'quantization_level': quant_level,
+                    'total_tests': len(results),
+                    'successful_tests': len([r for r in results if 'error' not in r]),
+                    'failed_tests': len([r for r in results if 'error' in r]),
+                    'results': results
+                }, f, indent=2)
+            print(f"\n✓ Summary logged to: {summary_path}")
+        
         return results
         
     finally:
