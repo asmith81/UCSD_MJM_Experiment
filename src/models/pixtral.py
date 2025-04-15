@@ -180,16 +180,14 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",  # Explicit GPU mapping
                     low_cpu_mem_usage=True,
-                    torch_dtype=default_dtype,
-                    attn_implementation="flash_attention_2"  # Use flash attention
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 16:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    torch_dtype=default_dtype,
-                    attn_implementation="flash_attention_2"
+                    torch_dtype=default_dtype
                 )
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
@@ -202,8 +200,7 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config,
-                    attn_implementation="flash_attention_2"
+                    quantization_config=quantization_config
                 )
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
@@ -216,8 +213,7 @@ class PixtralModel:
                     self.model_path,
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config,
-                    attn_implementation="flash_attention_2"
+                    quantization_config=quantization_config
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
