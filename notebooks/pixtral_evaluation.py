@@ -23,7 +23,10 @@ import subprocess
 from pathlib import Path
 import logging
 import json
-from typing import Dict, Any, List
+import pandas as pd
+from PIL import Image
+import matplotlib.pyplot as plt
+from IPython.display import display, Markdown
 
 # Configure logging first
 logging.basicConfig(
@@ -139,12 +142,6 @@ except Exception as e:
     logger.error(f"Error setting up data configuration: {str(e)}")
     raise
 
-# %% [markdown]
-# ## Model Configuration
-# 
-# Set the model name and test matrix path.
-
-# %%
 # Set model for this notebook
 MODEL_NAME = "pixtral"
 TEST_MATRIX_PATH = str(ROOT_DIR / "config" / "test_matrix.json")
@@ -232,11 +229,6 @@ except Exception as e:
 # Test the entire pipeline with a single example to verify system functionality.
 
 # %%
-import pandas as pd
-from PIL import Image
-import matplotlib.pyplot as plt
-from IPython.display import display, Markdown
-
 def run_single_test():
     """Run a single test case through the entire pipeline."""
     try:
