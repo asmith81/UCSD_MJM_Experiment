@@ -193,7 +193,7 @@ class PixtralModel:
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
                     load_in_8bit=True,
-                    bnb_8bit_compute_dtype=default_dtype,
+                    bnb_8bit_compute_dtype=torch.bfloat16,
                     bnb_8bit_use_double_quant=True,
                     bnb_8bit_quant_type="fp8"  # Using fp8 for better accuracy
                 )
@@ -202,12 +202,13 @@ class PixtralModel:
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config,
-                    use_flash_attention_2=True
+                    use_flash_attention_2=True,
+                    torch_dtype=torch.bfloat16  # Ensure model weights are in bfloat16
                 )
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
-                    bnb_4bit_compute_dtype=default_dtype,
+                    bnb_4bit_compute_dtype=torch.bfloat16,
                     bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4"
                 )
@@ -216,7 +217,8 @@ class PixtralModel:
                     device_map="cuda:0",
                     low_cpu_mem_usage=True,
                     quantization_config=quantization_config,
-                    use_flash_attention_2=True
+                    use_flash_attention_2=True,
+                    torch_dtype=torch.bfloat16  # Ensure model weights are in bfloat16
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
