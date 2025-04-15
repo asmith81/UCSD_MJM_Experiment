@@ -175,7 +175,7 @@ try:
         raise ValueError("Test matrix must contain 'test_cases' array")
         
     # Validate required fields
-    required_fields = ['model_name', 'field_type', 'prompt_type', 'quant_level', 'image_path']
+    required_fields = ['model', 'quantization_level', 'prompt_type', 'field_type', 'image_path']
     for test_case in test_matrix['test_cases']:
         missing_fields = [field for field in required_fields if field not in test_case]
         if missing_fields:
@@ -183,8 +183,8 @@ try:
             
     # Validate quantization values
     valid_quantization = [4, 8, 16, 32]
-    invalid_quantization = [case['quant_level'] for case in test_matrix['test_cases'] 
-                          if case['quant_level'] not in valid_quantization]
+    invalid_quantization = [case['quantization_level'] for case in test_matrix['test_cases'] 
+                          if case['quantization_level'] not in valid_quantization]
     if invalid_quantization:
         raise ValueError(f"Invalid quantization values found: {invalid_quantization}")
             
@@ -357,7 +357,7 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     # Filter test cases for this quantization level and model
     quant_test_cases = [
         case for case in test_matrix['test_cases']
-        if case['quant_level'] == quant_level and case['model_name'] == MODEL_NAME
+        if case['quantization_level'] == quant_level and case['model'] == MODEL_NAME
     ]
     
     if not quant_test_cases:
