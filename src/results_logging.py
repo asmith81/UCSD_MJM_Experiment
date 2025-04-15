@@ -623,6 +623,10 @@ def log_quantization_results(
             
             result["results_by_prompt"][prompt_type]["results_by_image"][image_id] = {
                 "image_path": r["test_parameters"]["image_path"],
+                "ground_truth": {
+                    "work_order_number": r["ground_truth"]["work_order_number"],
+                    "total_cost": r["ground_truth"]["total_cost"]
+                },
                 "model_response": {
                     "work_order_number": {
                         "raw_text": r["model_response"]["work_order_number"]["raw_text"],
