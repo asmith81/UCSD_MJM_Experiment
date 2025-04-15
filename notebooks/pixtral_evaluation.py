@@ -370,6 +370,15 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
         temp_path = temp_file.name
     
     try:
+        # Load model once for all test cases
+        logger.info(f"Loading model {MODEL_NAME} with quantization {quant_level}")
+        model = load_model(
+            model_name=MODEL_NAME,
+            quantization=quant_level,
+            models_dir=env['models_dir'],
+            config=config
+        )
+        
         # Run test suite for this quantization level
         results = []
         for i, test_case in enumerate(quant_test_cases, 1):
@@ -387,48 +396,55 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             )
             
             try:
-                result = execution.run_test_suite(
-                    model_name=MODEL_NAME,
-                    test_matrix_path=temp_path,
-                    model_loader=lambda name, quant: load_model(
-                        model_name=name,
-                        quantization=quant,
-                        models_dir=env['models_dir'],
-                        config=config
-                    ),
-                    processor=lambda model, prompt, test_case: process_image_wrapper(
-                        model=model,
-                        prompt_template=prompt,
-                        image_path=test_case['image_path'],
-                        field_type=test_case['field_type'],
-                        config=data_config
-                    ),
-                    prompt_loader=lambda strategy: load_prompt_template(
-                        prompt_strategy=strategy,
-                        prompts_dir=ROOT_DIR / "config" / "prompts"
-                    ),
-                    result_validator=validate_results,
-                    project_root=ROOT_DIR
+                # Load prompt template
+                prompt_template = load_prompt_template(
+                    prompt_strategy=test_case['prompt_type'],
+                    prompts_dir=ROOT_DIR / "config" / "prompts"
                 )
                 
+                # Process image
+                result = process_image_wrapper(
+                    model=model,
+                    prompt_template=prompt_template,
+                    image_path=test_case['image_path'],
+                    field_type=test_case['field_type'],
+                    config=data_config
+                )
+                
+                # Get ground truth
+                ground_truth = test_case.get('ground_truth', {})
+                
+                # Evaluate results
+                evaluation = evaluate_model_output(
+                    result['model_response']['output'],
+                    ground_truth,
+                    test_case['field_type']
+                )
+                
+                # Add evaluation to result
+                result['evaluation'] = evaluation
+                
+                # Validate results
+                validated_result = validate_results(result)
+                
                 # Log result for this test case
-                if result:
+                if validated_result:
                     # Convert image path to Path object to get stem
                     image_path = Path(test_case['image_path'])
                     result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{test_case['prompt_type']}_{image_path.stem}.json"
                     log_result(
                         result_path=result_path,
                         image_id=image_path.stem,
-                        model_output=result[0]['model_response'],
-                        ground_truth=test_case.get('ground_truth', {}),
-                        processing_time=result[0]['model_response'].get('processing_time', 0.0),
+                        model_output=validated_result['model_response'],
+                        ground_truth=ground_truth,
+                        processing_time=validated_result['model_response'].get('processing_time', 0.0),
                         model_name=MODEL_NAME,
                         prompt_type=test_case['prompt_type'],
                         quant_level=quant_level
                     )
                     print(f"✓ Results logged to: {result_path}")
                 
-                results.extend(result)
+                results.append(validated_result)
                 print(f"✓ Completed test case {i}/{len(quant_test_cases)}")
                 
                 # Track successful completion
