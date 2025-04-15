@@ -88,7 +88,7 @@ from src.environment import setup_environment, download_model
 from src.config import load_yaml_config
 from src.models.pixtral import load_model, process_image_wrapper, download_pixtral_model
 from src.prompts import load_prompt_template
-from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output, validate_ground_truth, normalize_total_cost
+from src.results_logging import track_execution, log_result, ResultStructure, evaluate_model_output, validate_ground_truth, normalize_total_cost, log_quantization_results
 from src.validation import validate_results, validate_test_matrix
 from src.data_utils import DataConfig, setup_data_paths
 
