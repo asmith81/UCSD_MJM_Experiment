@@ -361,14 +361,6 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
     
     print(f"\nRunning {len(quant_test_cases)} test cases for {quant_level}-bit quantization...")
     
-    # Create temporary test matrix file
-    import tempfile
-    import os
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as temp_file:
-        json.dump({'test_cases': quant_test_cases}, temp_file)
-        temp_path = temp_file.name
-    
     try:
         # Load model once for all test cases
         logger.info(f"Loading model {MODEL_NAME} with quantization {quant_level}")
@@ -379,95 +371,105 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
             config=config
         )
         
+        # Group test cases by prompt type and field type
+        grouped_cases = {}
+        for case in quant_test_cases:
+            key = (case['prompt_type'], case['field_type'])
+            if key not in grouped_cases:
+                grouped_cases[key] = []
+            grouped_cases[key].append(case)
+        
         # Run test suite for this quantization level
         results = []
-        for i, test_case in enumerate(quant_test_cases, 1):
-            print(f"\nTest case {i}/{len(quant_test_cases)}: {test_case['prompt_type']}")
-            print(f"Image: {test_case['image_path']}")
-            print(f"Field type: {test_case['field_type']}")
+        for (prompt_type, field_type), cases in grouped_cases.items():
+            print(f"\nProcessing {len(cases)} cases with prompt type: {prompt_type}, field type: {field_type}")
             
-            # Track execution start for this test case
-            track_execution(
-                EXECUTION_LOG_PATH,
-                MODEL_NAME,
-                test_case['prompt_type'],
-                quant_level,
-                "started"
+            # Load prompt template once for this group
+            prompt_template = load_prompt_template(
+                prompt_strategy=prompt_type,
+                prompts_dir=ROOT_DIR / "config" / "prompts"
             )
             
-            try:
-                # Load prompt template
-                prompt_template = load_prompt_template(
-                    prompt_strategy=test_case['prompt_type'],
-                    prompts_dir=ROOT_DIR / "config" / "prompts"
+            # Process images one at a time
+            for i, case in enumerate(cases):
+                print(f"\nProcessing case {i + 1}/{len(cases)}")
+                
+                # Track execution start
+                track_execution(
+                    EXECUTION_LOG_PATH,
+                    MODEL_NAME,
+                    case['prompt_type'],
+                    quant_level,
+                    "started"
                 )
                 
-                # Process image
-                result = process_image_wrapper(
-                    model=model,
-                    prompt_template=prompt_template,
-                    image_path=test_case['image_path'],
-                    field_type=test_case['field_type'],
-                    config=data_config
-                )
-                
-                # Get ground truth
-                ground_truth = test_case.get('ground_truth', {})
-                
-                # Evaluate results
-                evaluation = evaluate_model_output(
-                    result['model_response']['output'],
-                    ground_truth,
-                    test_case['field_type']
-                )
-                
-                # Add evaluation to result
-                result['evaluation'] = evaluation
-                
-                # Validate results
-                validated_result = validate_results(result)
-                
-                # Log result for this test case
-                if validated_result:
-                    # Convert image path to Path object to get stem
-                    image_path = Path(test_case['image_path'])
-                    result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{test_case['prompt_type']}_{image_path.stem}.json"
-                    log_result(
-                        result_path=result_path,
-                        image_id=image_path.stem,
-                        model_output=validated_result['model_response'],
-                        ground_truth=ground_truth,
-                        processing_time=validated_result['model_response'].get('processing_time', 0.0),
-                        model_name=MODEL_NAME,
-                        prompt_type=test_case['prompt_type'],
-                        quant_level=quant_level
+                try:
+                    # Process single image
+                    result = process_image_wrapper(
+                        model=model,
+                        prompt_template=prompt_template,
+                        image_path=str(case['image_path']),
+                        field_type=field_type,
+                        config=data_config
                     )
-                    print(f"✓ Results logged to: {result_path}")
-                
-                results.append(validated_result)
-                print(f"✓ Completed test case {i}/{len(quant_test_cases)}")
-                
-                # Track successful completion
-                track_execution(
-                    EXECUTION_LOG_PATH,
-                    MODEL_NAME,
-                    test_case['prompt_type'],
-                    quant_level,
-                    "completed"
-                )
-                
-            except Exception as e:
-                logger.error(f"Error in test case {test_case['prompt_type']}: {str(e)}")
-                # Track failure
-                track_execution(
-                    EXECUTION_LOG_PATH,
-                    MODEL_NAME,
-                    test_case['prompt_type'],
-                    quant_level,
-                    "failed",
-                    str(e)
-                )
-                raise
+                    
+                    # Get ground truth
+                    ground_truth = case.get('ground_truth', {})
+                    
+                    # Evaluate results
+                    evaluation = evaluate_model_output(
+                        result['model_response']['output'],
+                        ground_truth,
+                        field_type
+                    )
+                    
+                    # Add evaluation to result
+                    result['evaluation'] = evaluation
+                    
+                    # Validate results
+                    validated_result = validate_results(result)
+                    
+                    # Log result for this test case
+                    if validated_result:
+                        # Convert image path to Path object to get stem
+                        image_path = Path(case['image_path'])
+                        result_path = env['logs_dir'] / f"{MODEL_NAME}_{quant_level}bit_{case['prompt_type']}_{image_path.stem}.json"
+                        log_result(
+                            result_path=result_path,
+                            image_id=image_path.stem,
+                            model_output=validated_result['model_response'],
+                            ground_truth=ground_truth,
+                            processing_time=validated_result['model_response'].get('processing_time', 0.0),
+                            model_name=MODEL_NAME,
+                            prompt_type=case['prompt_type'],
+                            quant_level=quant_level
+                        )
+                        print(f"✓ Results logged to: {result_path}")
+                    
+                    results.append(validated_result)
+                    print(f"✓ Completed test case {i + 1}/{len(cases)}")
+                    
+                    # Track successful completion
+                    track_execution(
+                        EXECUTION_LOG_PATH,
+                        MODEL_NAME,
+                        case['prompt_type'],
+                        quant_level,
+                        "completed"
+                    )
+                    
+                except Exception as e:
+                    logger.error(f"Error processing case: {str(e)}")
+                    # Track failure
+                    track_execution(
+                        EXECUTION_LOG_PATH,
+                        MODEL_NAME,
+                        case['prompt_type'],
+                        quant_level,
+                        "failed",
+                        str(e)
+                    )
+                    raise
         
         # Log overall results for this quantization level
         if results:
@@ -484,12 +486,9 @@ def run_quantization_level(quant_level: int, test_matrix: dict) -> list:
         
         return results
         
-    finally:
-        # Clean up temporary file
-        try:
-            os.unlink(temp_path)
-        except Exception as e:
-            logger.warning(f"Failed to delete temporary file {temp_path}: {e}")
+    except Exception as e:
+        logger.error(f"Error in quantization level processing: {str(e)}")
+        raise
 
 # %% [markdown]
 # ### Run 32-bit Quantization Tests

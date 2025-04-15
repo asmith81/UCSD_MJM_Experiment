@@ -6,7 +6,7 @@ from invoice images. It includes model loading with quantization support,
 inference functions, and output parsing.
 """
 
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 import torch
 from transformers import LlavaForConditionalGeneration, AutoProcessor
 from PIL import Image
@@ -159,7 +159,7 @@ class PixtralModel:
             if missing_files:
                 raise FileNotFoundError(f"Missing required model files: {missing_files}")
             
-            # Load processor
+            # Load processor with fast processing enabled
             self.processor = AutoProcessor.from_pretrained(
                 self.model_path,
                 use_fast=True
@@ -175,16 +175,20 @@ class PixtralModel:
             if self.quantization == 32:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
-                    device_map="auto",
+                    device_map="cuda:0",  # Explicit GPU mapping
                     low_cpu_mem_usage=True,
-                    torch_dtype=default_dtype
+                    torch_dtype=default_dtype,
+                    use_flash_attention_2=True,  # Enable flash attention
+                    attn_implementation="flash_attention_2"  # Use flash attention
                 )
             elif self.quantization == 16:
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
-                    device_map="auto",
+                    device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    torch_dtype=default_dtype
+                    torch_dtype=default_dtype,
+                    use_flash_attention_2=True,
+                    attn_implementation="flash_attention_2"
                 )
             elif self.quantization == 8:
                 quantization_config = BitsAndBytesConfig(
@@ -195,22 +199,26 @@ class PixtralModel:
                 )
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
-                    device_map="auto",
+                    device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config
+                    quantization_config=quantization_config,
+                    use_flash_attention_2=True,
+                    attn_implementation="flash_attention_2"
                 )
             elif self.quantization == 4:
                 quantization_config = BitsAndBytesConfig(
                     load_in_4bit=True,
                     bnb_4bit_compute_dtype=default_dtype,
-                    bnb_4bit_use_double_quant=True,  # Added for better memory efficiency
+                    bnb_4bit_use_double_quant=True,
                     bnb_4bit_quant_type="nf4"
                 )
                 self.model = LlavaForConditionalGeneration.from_pretrained(
                     self.model_path,
-                    device_map="auto",
+                    device_map="cuda:0",
                     low_cpu_mem_usage=True,
-                    quantization_config=quantization_config
+                    quantization_config=quantization_config,
+                    use_flash_attention_2=True,
+                    attn_implementation="flash_attention_2"
                 )
             else:
                 raise ValueError(f"Unsupported quantization level: {self.quantization}")
@@ -226,15 +234,15 @@ class PixtralModel:
             
     def process_image(
         self,
-        image_path: Union[str, Path],
+        image_paths: Union[str, Path, List[Union[str, Path]]],
         prompt: str,
         field_type: str,
         config: DataConfig
     ) -> Dict[str, Any]:
-        """Process image and extract field value.
+        """Process image(s) and extract field value.
         
         Args:
-            image_path: Path to input image
+            image_paths: Path(s) to input image(s)
             prompt: Prompt template for extraction
             field_type: Type of field to extract
             config: Data configuration
@@ -248,12 +256,16 @@ class PixtralModel:
         try:
             start_time = time.time()
             
-            # Format chat-style input with direct image path
+            # Convert single path to list for consistent handling
+            if not isinstance(image_paths, list):
+                image_paths = [image_paths]
+            
+            # Format chat-style input with direct image paths
             chat = [{
                 "role": "user",
                 "content": [
                     {"type": "text", "content": prompt},
-                    {"type": "image", "url": str(image_path)}
+                    *[{"type": "image", "url": str(path)} for path in image_paths]
                 ]
             }]
             
@@ -280,15 +292,14 @@ class PixtralModel:
             with torch.no_grad():
                 outputs = self.model.generate(
                     **inputs,
-                    max_new_tokens=500,  # Using model card's recommended value
+                    max_new_tokens=50,  # Increased from 30 for better accuracy
                     num_return_sequences=1,
-                    temperature=0.3,  # Reduced from 0.7 for faster convergence
-                    do_sample=False,  # Disabled sampling for faster inference
+                    temperature=0.7,  # Increased from 0.3 for better diversity
+                    do_sample=True,  # Enable sampling for better results
                     pad_token_id=self.processor.tokenizer.pad_token_id,
                     eos_token_id=self.processor.tokenizer.eos_token_id,
                     use_cache=True,  # Enable KV cache
-                    early_stopping=True,  # Stop when EOS is generated
-                    repetition_penalty=1.1  # Slightly penalize repetition
+                    early_stopping=True  # Stop when EOS is generated
                 )
                 
             # Decode output
