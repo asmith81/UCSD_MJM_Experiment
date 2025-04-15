@@ -93,7 +93,7 @@ def validate_ground_truth(ground_truth: Dict[str, Any]) -> bool:
             raise ValueError(f"Missing required ground truth field: {field}")
     return True
 
-def normalize_total_cost(value: Union[str, float]) -> float:
+def normalize_total_cost(value: Union[str, int, float]) -> str:
     """
     Normalize total cost value to float.
     
@@ -103,10 +103,9 @@ def normalize_total_cost(value: Union[str, float]) -> float:
     Returns:
         Normalized float value
     """
-    if isinstance(value, str):
-        # Remove currency symbols and whitespace
-        value = ''.join(c for c in value if c.isdigit() or c == '.')
-    return float(value)
+    if isinstance(value, (int, float)):
+        return str(value)
+    return ''.join(c for c in str(value) if c.isdigit() or c == '.')
 
 def calculate_cer(pred: str, true: str) -> float:
     """
@@ -302,11 +301,14 @@ def evaluate_model_output(
     
     # Normalize values for comparison
     def normalize_work_order(value: str) -> str:
-        return ''.join(c for c in value if c.isalnum())
+        return ''.join(c for c in str(value) if c.isalnum())
         
-    def normalize_total_cost(value: str) -> str:
-        # Remove currency symbol and whitespace, keep only digits and decimal
-        return ''.join(c for c in value if c.isdigit() or c == '.')
+    def normalize_total_cost(value: Union[str, int, float]) -> str:
+        # Convert numeric values to string with 2 decimal places
+        if isinstance(value, (int, float)):
+            return f"{float(value):.2f}"
+        # For strings, remove currency symbols and whitespace, keep only digits and decimal
+        return ''.join(c for c in str(value) if c.isdigit() or c == '.')
     
     # Normalize values
     work_order_pred_norm = normalize_work_order(work_order_pred)
