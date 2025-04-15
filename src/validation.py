@@ -56,7 +56,11 @@ def validate_test_matrix(test_matrix: Dict[str, Any], supported_quant_levels: Li
                 raise ValueError(f"Test case {i} has invalid prompt type: {test_case['prompt_type']}")
                 
             # Validate image path exists
-            image_path = data_dir / test_case['image_path']
+            # Strip leading 'data/' from the path if it exists
+            image_path = test_case['image_path']
+            if image_path.startswith('data/'):
+                image_path = image_path[5:]  # Remove 'data/' prefix
+            image_path = data_dir / image_path
             if not image_path.exists():
                 raise ValueError(f"Test case {i} image path does not exist: {image_path}")
                 
