@@ -144,6 +144,9 @@ class PixtralModel:
         self.processor = None
         self._load_model()
         
+        # Pre-process chat template format
+        self.chat_template = self.processor.tokenizer.chat_template
+        
     def _load_model(self) -> None:
         """Load model with specified quantization.
         
@@ -260,12 +263,26 @@ class PixtralModel:
             if not isinstance(image_paths, list):
                 image_paths = [image_paths]
             
-            # Format chat-style input with direct image paths
+            # Load and preprocess images
+            images = []
+            for path in image_paths:
+                # Convert path to absolute path if it's relative
+                path = Path(path)
+                if not path.is_absolute():
+                    path = Path.cwd() / path
+                
+                # Load and preprocess image
+                image = Image.open(path)
+                if image.mode != 'RGB':
+                    image = image.convert('RGB')
+                images.append(image)
+            
+            # Format chat-style input with actual images
             chat = [{
                 "role": "user",
                 "content": [
                     {"type": "text", "content": prompt},
-                    *[{"type": "image", "url": str(path)} for path in image_paths]
+                    *[{"type": "image", "image": img} for img in images]
                 ]
             }]
             
@@ -278,15 +295,16 @@ class PixtralModel:
                 return_tensors="pt"
             ).to(self.device)
             
-            # Convert all input tensors to appropriate precision based on quantization
+            # Optimize input tensor conversion
             if self.quantization in [4, 8, 16]:
-                for key in inputs:
-                    if isinstance(inputs[key], torch.Tensor):
-                        # Convert to half precision
-                        inputs[key] = inputs[key].half()
-                        # Ensure attention mask is boolean type
-                        if key == 'attention_mask':
-                            inputs[key] = inputs[key].bool()
+                # Only convert input_ids and pixel_values to half precision
+                if 'input_ids' in inputs:
+                    inputs['input_ids'] = inputs['input_ids'].half()
+                if 'pixel_values' in inputs:
+                    inputs['pixel_values'] = inputs['pixel_values'].half()
+                # Keep attention mask as boolean
+                if 'attention_mask' in inputs:
+                    inputs['attention_mask'] = inputs['attention_mask'].bool()
             
             # Run inference with optimized parameters
             with torch.no_grad():
